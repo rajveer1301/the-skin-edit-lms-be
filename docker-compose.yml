@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: skinedit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: skinedit
+      POSTGRES_PASSWORD: skinedit
+      POSTGRES_DB: skinedit
+    ports:
+      - '5432:5432'
+    volumes:
+      - skinedit_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U skinedit -d skinedit']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  skinedit_pgdata:

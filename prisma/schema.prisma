@@ -1,0 +1,314 @@
+// The Skin Edit - Clinic Management System
+// Prisma schema mirroring the frontend TypeScript models (contract-first).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  RECEPTIONIST
+  ACCOUNTANT
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ServiceCategory {
+  SKIN
+  HAIR
+  WELLNESS
+  LASER
+  INJECTABLE
+  OTHER
+}
+
+enum TreatmentStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  UPI
+  BANK_TRANSFER
+  INSURANCE
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONSULTATION_SCHEDULED
+  CONVERTED
+  LOST
+}
+
+enum LeadSource {
+  WALK_IN
+  REFERRAL
+  INSTAGRAM
+  FACEBOOK
+  GOOGLE
+  WEBSITE
+  OTHER
+}
+
+model User {
+  id             String   @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String?
+  role           Role
+  active         Boolean  @default(true)
+  specialization String?
+  avatarUrl      String?
+  passwordHash   String
+  refreshToken   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  appointments  Appointment[] @relation("DoctorAppointments")
+  treatments    Treatment[]   @relation("DoctorTreatments")
+  assignedLeads Lead[]        @relation("AssignedLeads")
+}
+
+model Patient {
+  id                 String   @id @default(cuid())
+  firstName          String
+  lastName           String
+  gender             Gender
+  dateOfBirth        String?
+  phone              String
+  email              String?
+  address            String?
+  city               String?
+  bloodGroup         String?
+  allergies          String[]
+  allergyDetails     String?
+  medicalConditions  String[]
+  medications        String[]
+  medicalHistory     String?
+  previousProcedures String[]
+  pregnancyStatus    String?
+  referralSource     String?
+  skinConcerns       String[]
+  hairConcerns       String[]
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  appointments Appointment[]
+  treatments   Treatment[]
+  invoices     Invoice[]
+}
+
+model ClinicService {
+  id              String          @id @default(cuid())
+  name            String
+  category        ServiceCategory
+  description     String?
+  durationMinutes Int
+  price           Float
+  active          Boolean         @default(true)
+
+  appointments Appointment[]
+  treatments   Treatment[]
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId String
+  doctor    User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctorId  String
+  service   ClinicService?    @relation(fields: [serviceId], references: [id])
+  serviceId String?
+  startTime DateTime
+  endTime   DateTime
+  status    AppointmentStatus @default(SCHEDULED)
+  notes     String?
+  createdAt DateTime          @default(now())
+}
+
+model Treatment {
+  id              String          @id @default(cuid())
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId       String
+  service         ClinicService   @relation(fields: [serviceId], references: [id])
+  serviceId       String
+  doctor          User            @relation("DoctorTreatments", fields: [doctorId], references: [id])
+  doctorId        String
+  date            String
+  status          TreatmentStatus @default(PLANNED)
+  sessionNumber   Int?
+  totalSessions   Int?
+  price           Float
+  isComplementary Boolean         @default(false)
+  beforeImage     Bytes?
+  beforeImageType String?
+  afterImage      Bytes?
+  afterImageType  String?
+  notes           String?
+  createdAt       DateTime        @default(now())
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  number     String        @unique
+  patient    Patient       @relation(fields: [patientId], references: [id])
+  patientId  String
+  subtotal   Float
+  discount   Float         @default(0)
+  tax        Float         @default(0)
+  total      Float
+  amountPaid Float         @default(0)
+  balance    Float
+  status     InvoiceStatus @default(UNPAID)
+  issuedDate String
+  dueDate    String?
+  notes      String?
+  couponId   String?
+  couponCode String?
+  createdAt  DateTime      @default(now())
+
+  coupon   Coupon?       @relation(fields: [couponId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  description String
+  serviceId   String?
+  quantity    Int
+  unitPrice   Float
+  total       Float
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String
+  amount    Float
+  method    PaymentMethod
+  date      String
+  reference String?
+  note      String?
+}
+
+model Product {
+  id           String  @id @default(cuid())
+  name         String
+  sku          String  @unique
+  category     String
+  unit         String
+  quantity     Int     @default(0)
+  reorderLevel Int     @default(0)
+  costPrice    Float   @default(0)
+  sellPrice    Float   @default(0)
+  supplier     String?
+  active       Boolean @default(true)
+
+  stockMovements StockMovement[]
+}
+
+model StockMovement {
+  id         String            @id @default(cuid())
+  product    Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  type       StockMovementType
+  quantity   Int
+  reason     String?
+  date       DateTime          @default(now())
+  byUserName String?
+}
+
+model Lead {
+  id           String     @id @default(cuid())
+  firstName    String
+  lastName     String
+  phone        String
+  email        String?
+  source       LeadSource
+  status       LeadStatus @default(NEW)
+  interestedIn String?
+  assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  assignedToId String?
+  notes        String?
+  followUpDate String?
+  createdAt    DateTime   @default(now())
+}
+
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  description String?
+  type        CouponType
+  value       Float
+  minAmount   Float?
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  validFrom   String?
+  validTo     String?
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  usages   CouponUsage[]
+  invoices Invoice[]
+}
+
+model CouponUsage {
+  id             String   @id @default(cuid())
+  coupon         Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  couponId       String
+  couponCode     String
+  invoiceId      String?
+  invoiceNumber  String?
+  patientId      String?
+  patientName    String?
+  discountAmount Float
+  usedAt         DateTime @default(now())
+}
