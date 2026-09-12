@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppointmentStatus, LeadSource } from '@prisma/client';
+import { AppointmentStatus, LeadSource, LeadStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { bucketKey, lastSixMonths, RevenuePoint } from './analytics.util';
 
@@ -18,12 +18,15 @@ export interface RevenueReport {
 export interface AppointmentsReport {
   byStatus: StatusCount[];
   byService: RevenuePoint[];
+  byCategory: RevenuePoint[];
+  noShowRate: number;
   total: number;
 }
 
 export interface PatientsReport {
   bySource: RevenuePoint[];
   newByMonth: RevenuePoint[];
+  leadConversionPercent: number;
   total: number;
 }
 
@@ -69,7 +72,9 @@ export class ReportsService {
       this.prisma.appointment.findMany({
         select: { status: true, serviceId: true },
       }),
-      this.prisma.clinicService.findMany({ select: { id: true, name: true } }),
+      this.prisma.clinicService.findMany({
+        select: { id: true, name: true, category: true },
+      }),
     ]);
     const byStatus: StatusCount[] = Object.values(AppointmentStatus).map(
       (status) => ({
@@ -83,13 +88,32 @@ export class ReportsService {
         value: appointments.filter((a) => a.serviceId === s.id).length,
       }))
       .filter((x) => x.value > 0);
-    return { byStatus, byService, total: appointments.length };
+    const byCategoryMap = new Map<string, number>();
+    for (const s of services) {
+      const count = appointments.filter((a) => a.serviceId === s.id).length;
+      byCategoryMap.set(s.category, (byCategoryMap.get(s.category) ?? 0) + count);
+    }
+    const noShows = appointments.filter(
+      (a) => a.status === AppointmentStatus.NO_SHOW,
+    ).length;
+    return {
+      byStatus,
+      byService,
+      byCategory: [...byCategoryMap.entries()].map(([label, value]) => ({
+        label,
+        value,
+      })),
+      noShowRate: appointments.length
+        ? Math.round((noShows / appointments.length) * 100)
+        : 0,
+      total: appointments.length,
+    };
   }
 
   async patients(): Promise<PatientsReport> {
     const now = new Date();
     const [leads, patients] = await Promise.all([
-      this.prisma.lead.findMany({ select: { source: true } }),
+      this.prisma.lead.findMany({ select: { source: true, status: true } }),
       this.prisma.patient.findMany({ select: { createdAt: true } }),
     ]);
     const bySource = Object.values(LeadSource).map((source) => ({
@@ -108,6 +132,15 @@ export class ReportsService {
       value: counts.get(bucketKey(b)) ?? 0,
     }));
 
-    return { bySource, newByMonth, total: patients.length };
+    const converted = leads.filter((l) => l.status === LeadStatus.CONVERTED)
+      .length;
+    return {
+      bySource,
+      newByMonth,
+      leadConversionPercent: leads.length
+        ? Math.round((converted / leads.length) * 100)
+        : 0,
+      total: patients.length,
+    };
   }
 }

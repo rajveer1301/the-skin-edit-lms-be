@@ -32,13 +32,13 @@ export class InventoryController {
     return this.inventoryService.findProduct(id);
   }
 
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Post('products')
   createProduct(@Body() dto: CreateProductDto) {
     return this.inventoryService.createProduct(dto);
   }
 
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Put('products/:id')
   updateProduct(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.inventoryService.updateProduct(id, dto);
@@ -55,7 +55,7 @@ export class InventoryController {
     return this.inventoryService.findStockMovements(query);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Post('stock-movements')
   createStockMovement(
     @Body() dto: CreateStockMovementDto,

@@ -120,6 +120,7 @@ export class InventoryService {
           type: dto.type,
           quantity: dto.quantity,
           reason: dto.reason,
+          treatmentId: dto.treatmentId,
           byUserName,
         },
         include: { product: true },

@@ -3,8 +3,10 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -33,6 +35,23 @@ export class CreateStaffDto {
   @IsOptional()
   @IsString()
   specialization?: string;
+
+  @IsOptional()
+  @IsString()
+  registrationNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  calendarColor?: string;
+
+  @IsOptional()
+  @IsString()
+  workingHours?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  commissionPercent?: number;
 
   @IsOptional()
   @IsString()

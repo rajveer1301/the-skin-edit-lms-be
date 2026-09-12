@@ -15,12 +15,14 @@ import { PatientsModule } from './patients/patients.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
 import { StaffModule } from './staff/staff.module';
+import { StorageModule } from './storage/storage.module';
 import { TreatmentsModule } from './treatments/treatments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    StorageModule,
     AuthModule,
     PatientsModule,
     AppointmentsModule,

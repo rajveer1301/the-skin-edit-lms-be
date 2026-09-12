@@ -1,4 +1,4 @@
-import { PaymentMethod } from '@prisma/client';
+import { PaymentKind, PaymentMethod } from '@prisma/client';
 import {
   IsEnum,
   IsNumber,
@@ -27,4 +27,18 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentKind)
+  paymentKind?: PaymentKind;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  instalmentNumber?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  instalmentOf?: number;
 }

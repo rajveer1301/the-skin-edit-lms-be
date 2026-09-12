@@ -14,6 +14,7 @@ enum Role {
   SUPER_ADMIN
   ADMIN
   DOCTOR
+  THERAPIST
   RECEPTIONIST
   ACCOUNTANT
 }
@@ -41,9 +42,101 @@ enum AppointmentStatus {
 enum ServiceCategory {
   SKIN
   HAIR
+  TRICHOLOGY
   WELLNESS
   LASER
   INJECTABLE
+  OTHER
+}
+
+enum VisitType {
+  CONSULTATION
+  PROCEDURE
+  REVIEW
+  PATCH_TEST
+  FOLLOW_UP
+}
+
+enum TreatmentArea {
+  SCALP_FRONTAL
+  SCALP_VERTEX
+  SCALP_TEMPORAL
+  SCALP_CROWN
+  SCALP_NAPE
+  FULL_SCALP
+  BEARD
+  EYEBROWS
+  FACE
+  NECK
+  BODY
+  OTHER
+}
+
+enum PrepStatus {
+  NOT_REQUIRED
+  PENDING
+  COMPLETED
+}
+
+enum ReminderChannel {
+  WHATSAPP
+  SMS
+  CALL
+  EMAIL
+  NONE
+}
+
+enum BookingSource {
+  WALK_IN
+  PHONE
+  WHATSAPP
+  INSTAGRAM
+  FOLLOW_UP
+  OTHER
+}
+
+enum FitzpatrickType {
+  I
+  II
+  III
+  IV
+  V
+  VI
+}
+
+enum ScalpType {
+  OILY
+  DRY
+  COMBINATION
+  SENSITIVE
+  NORMAL
+}
+
+enum HairType {
+  STRAIGHT
+  WAVY
+  CURLY
+  COILY
+}
+
+enum HairLossScale {
+  NORWOOD
+  LUDWIG
+  SINCLAIR
+}
+
+enum InterestCategory {
+  SKIN
+  HAIR
+  TRICHOLOGY
+  WELLNESS
+}
+
+enum LeadLostReason {
+  PRICE
+  CHOSE_ANOTHER_CLINIC
+  NOT_READY
+  UNREACHABLE
   OTHER
 }
 
@@ -67,6 +160,13 @@ enum PaymentMethod {
   UPI
   BANK_TRANSFER
   INSURANCE
+}
+
+enum PaymentKind {
+  ADVANCE
+  INSTALMENT
+  SESSION
+  FINAL
 }
 
 enum StockMovementType {
@@ -94,19 +194,23 @@ enum LeadSource {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  firstName      String
-  lastName       String
-  email          String   @unique
-  phone          String?
-  role           Role
-  active         Boolean  @default(true)
-  specialization String?
-  avatarUrl      String?
-  passwordHash   String
-  refreshToken   String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String   @unique
+  phone               String?
+  role                Role
+  active              Boolean  @default(true)
+  specialization      String?
+  registrationNumber  String?
+  calendarColor       String?
+  workingHours        String?
+  commissionPercent   Float?
+  avatarUrl           String?
+  passwordHash        String
+  refreshToken        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   appointments  Appointment[] @relation("DoctorAppointments")
   treatments    Treatment[]   @relation("DoctorTreatments")
@@ -114,103 +218,192 @@ model User {
 }
 
 model Patient {
-  id                 String   @id @default(cuid())
-  firstName          String
-  lastName           String
-  gender             Gender
-  dateOfBirth        String?
-  phone              String
-  email              String?
-  address            String?
-  city               String?
-  bloodGroup         String?
-  allergies          String[]
-  allergyDetails     String?
-  medicalConditions  String[]
-  medications        String[]
-  medicalHistory     String?
-  previousProcedures String[]
-  pregnancyStatus    String?
-  referralSource     String?
-  skinConcerns       String[]
-  hairConcerns       String[]
-  notes              String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                     String            @id @default(cuid())
+  mrn                    String?
+  firstName              String
+  lastName               String
+  gender                 Gender
+  dateOfBirth            String?
+  phone                  String
+  whatsapp               String?
+  reminderChannel        ReminderChannel?
+  email                  String?
+  address                String?
+  city                   String?
+  bloodGroup             String?
+  emergencyContactName   String?
+  emergencyContactPhone  String?
+  occupation             String?
+  lifestyleNotes         String?
+  allergies              String[]
+  allergyDetails         String?
+  medicalConditions      String[]
+  medications            String[]
+  medicalHistory         String?
+  previousProcedures     String[]
+  pregnancyStatus        String?
+  familyHistoryAlopecia  Boolean?
+  smokingStatus          String?
+  referralSource         String?
+  leadId                 String?
+  billingName            String?
+  preferredLanguage      String?
+  maritalStatus          String?
+  pincode                String?
+  emergencyContactRelation String?
+  emergencyContactAlternatePhone String?
+  visitReasons           String[]          @default([])
+  visitReasonOther       String?
+  mainConcern            String?
+  referralSourceOther    String?
+  skinHairProfile        String[]          @default([])
+  allergyCategories      String[]          @default([])
+  recentProcedures       String?
+  homeCareProducts       String?
+  isotretinoinLast12Months String?
+  isotretinoinWhen       String?
+  photosensitisingMedicines String?
+  activeTreatmentAreaIssue String?
+  upcomingEventOrSunExposure String?
+  upcomingEventDate      String?
+  implantableDevices     String?
+  implantableDevicesDetails String?
+  fitzpatrickType        FitzpatrickType?
+  scalpType              ScalpType?
+  hairType               HairType?
+  hairLossScale          HairLossScale?
+  hairLossGrade          String?
+  skinConcerns           String[]
+  hairConcerns           String[]
+  wellnessConcerns       String[]          @default([])
+  notes                  String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
 
   appointments Appointment[]
   treatments   Treatment[]
   invoices     Invoice[]
+  documents    PatientDocument[]
 }
 
 model ClinicService {
-  id              String          @id @default(cuid())
-  name            String
-  category        ServiceCategory
-  description     String?
-  durationMinutes Int
-  price           Float
-  active          Boolean         @default(true)
+  id                  String          @id @default(cuid())
+  name                String
+  category            ServiceCategory
+  description         String?
+  durationMinutes     Int
+  bufferMinutes       Int?
+  price               Float
+  hsnSac              String?
+  gstPercent          Float?
+  requiresPatchTest   Boolean         @default(false)
+  requiresConsent     Boolean         @default(false)
+  isPackage           Boolean         @default(false)
+  defaultSessionCount Int?
+  active              Boolean         @default(true)
 
   appointments Appointment[]
   treatments   Treatment[]
 }
 
 model Appointment {
-  id        String            @id @default(cuid())
-  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId String
-  doctor    User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  doctorId  String
-  service   ClinicService?    @relation(fields: [serviceId], references: [id])
-  serviceId String?
-  startTime DateTime
-  endTime   DateTime
-  status    AppointmentStatus @default(SCHEDULED)
-  notes     String?
-  createdAt DateTime          @default(now())
+  id               String            @id @default(cuid())
+  patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId        String
+  doctor           User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctorId         String
+  service          ClinicService?    @relation(fields: [serviceId], references: [id])
+  serviceId        String?
+  visitType        VisitType         @default(CONSULTATION)
+  chiefComplaint   String?
+  treatmentArea    TreatmentArea?
+  sessionNumber    Int?
+  totalSessions    Int?
+  consentStatus    PrepStatus?
+  patchTestStatus  PrepStatus?
+  room             String?
+  bookingSource    BookingSource?
+  reminderChannel  ReminderChannel?
+  depositExpected  Float?
+  treatmentId      String?
+  invoiceId        String?
+  startTime        DateTime
+  endTime          DateTime
+  status           AppointmentStatus @default(SCHEDULED)
+  notes            String?
+  createdAt        DateTime          @default(now())
 }
 
 model Treatment {
-  id              String          @id @default(cuid())
-  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId       String
-  service         ClinicService   @relation(fields: [serviceId], references: [id])
-  serviceId       String
-  doctor          User            @relation("DoctorTreatments", fields: [doctorId], references: [id])
-  doctorId        String
-  date            String
-  status          TreatmentStatus @default(PLANNED)
-  sessionNumber   Int?
-  totalSessions   Int?
-  price           Float
-  isComplementary Boolean         @default(false)
-  beforeImage     Bytes?
-  beforeImageType String?
-  afterImage      Bytes?
-  afterImageType  String?
-  notes           String?
-  createdAt       DateTime        @default(now())
+  id               String          @id @default(cuid())
+  patient          Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId        String
+  service          ClinicService   @relation(fields: [serviceId], references: [id])
+  serviceId        String
+  doctor           User            @relation("DoctorTreatments", fields: [doctorId], references: [id])
+  doctorId         String
+  therapistName    String?
+  appointmentId    String?
+  date             String
+  status           TreatmentStatus @default(PLANNED)
+  sessionNumber    Int?
+  totalSessions    Int?
+  treatmentArea    TreatmentArea?
+  parameters       String?
+  consumablesUsed  String?
+  adverseReaction  String?
+  aftercare        String?
+  nextSessionDate  String?
+  diagnosis        String?
+  trichoscopyNotes String?
+  price            Float
+  isComplementary  Boolean         @default(false)
+  beforeImageKey   String?
+  beforeImageType  String?
+  afterImageKey    String?
+  afterImageType   String?
+  notes            String?
+  createdAt        DateTime        @default(now())
+}
+
+model PatientDocument {
+  id          String   @id @default(cuid())
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId   String
+  name        String
+  type        String
+  storageKey  String
+  contentType String
+  sizeBytes   Int
+  uploadedAt  DateTime @default(now())
+
+  @@index([patientId, uploadedAt])
 }
 
 model Invoice {
-  id         String        @id @default(cuid())
-  number     String        @unique
-  patient    Patient       @relation(fields: [patientId], references: [id])
-  patientId  String
-  subtotal   Float
-  discount   Float         @default(0)
-  tax        Float         @default(0)
-  total      Float
-  amountPaid Float         @default(0)
-  balance    Float
-  status     InvoiceStatus @default(UNPAID)
-  issuedDate String
-  dueDate    String?
-  notes      String?
-  couponId   String?
-  couponCode String?
-  createdAt  DateTime      @default(now())
+  id            String        @id @default(cuid())
+  number        String        @unique
+  patient       Patient       @relation(fields: [patientId], references: [id])
+  patientId     String
+  billedToName  String?
+  appointmentId String?
+  treatmentId   String?
+  subtotal      Float
+  discount      Float         @default(0)
+  tax           Float         @default(0)
+  cgst          Float?
+  sgst          Float?
+  roundOff      Float         @default(0)
+  total         Float
+  amountPaid    Float         @default(0)
+  balance       Float
+  status        InvoiceStatus @default(UNPAID)
+  issuedDate    String
+  dueDate       String?
+  notes         String?
+  couponId      String?
+  couponCode    String?
+  createdAt     DateTime      @default(now())
 
   coupon   Coupon?       @relation(fields: [couponId], references: [id])
   items    InvoiceItem[]
@@ -218,83 +411,110 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String  @id @default(cuid())
-  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   invoiceId   String
   description String
   serviceId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId   String?
+  hsnSac      String?
+  gstPercent  Float?
   quantity    Int
   unitPrice   Float
   total       Float
 }
 
 model Payment {
-  id        String        @id @default(cuid())
-  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  invoiceId String
-  amount    Float
-  method    PaymentMethod
-  date      String
-  reference String?
-  note      String?
+  id               String        @id @default(cuid())
+  invoice          Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId        String
+  amount           Float
+  method           PaymentMethod
+  date             String
+  reference        String?
+  note             String?
+  receiptNumber    String?       @unique
+  paymentKind      PaymentKind?
+  instalmentNumber Int?
+  instalmentOf     Int?
 }
 
 model Product {
-  id           String  @id @default(cuid())
-  name         String
-  sku          String  @unique
-  category     String
-  unit         String
-  quantity     Int     @default(0)
-  reorderLevel Int     @default(0)
-  costPrice    Float   @default(0)
-  sellPrice    Float   @default(0)
-  supplier     String?
-  active       Boolean @default(true)
+  id              String  @id @default(cuid())
+  name            String
+  sku             String  @unique
+  category        String
+  unit            String
+  quantity        Int     @default(0)
+  reorderLevel    Int     @default(0)
+  costPrice       Float   @default(0)
+  sellPrice       Float   @default(0)
+  supplier        String?
+  manufacturer    String?
+  batchLot        String?
+  expiryDate      String?
+  storageLocation String?
+  gstPercent      Float?
+  barcode         String?
+  retailUse       Boolean @default(false)
+  active          Boolean @default(true)
 
   stockMovements StockMovement[]
+  invoiceItems   InvoiceItem[]
 }
 
 model StockMovement {
-  id         String            @id @default(cuid())
-  product    Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId  String
-  type       StockMovementType
-  quantity   Int
-  reason     String?
-  date       DateTime          @default(now())
-  byUserName String?
+  id          String            @id @default(cuid())
+  product     Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  type        StockMovementType
+  quantity    Int
+  reason      String?
+  treatmentId String?
+  date        DateTime          @default(now())
+  byUserName  String?
 }
 
 model Lead {
-  id           String     @id @default(cuid())
-  firstName    String
-  lastName     String
-  phone        String
-  email        String?
-  source       LeadSource
-  status       LeadStatus @default(NEW)
-  interestedIn String?
-  assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
-  assignedToId String?
-  notes        String?
-  followUpDate String?
-  createdAt    DateTime   @default(now())
+  id                 String            @id @default(cuid())
+  firstName          String
+  lastName           String
+  phone              String
+  whatsapp           String?
+  email              String?
+  city               String?
+  gender             Gender?
+  source             LeadSource
+  status             LeadStatus        @default(NEW)
+  interestCategory   InterestCategory?
+  interestedIn       String?
+  lostReason         LeadLostReason?
+  convertedPatientId String?
+  assignedTo         User?             @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  assignedToId       String?
+  notes              String?
+  followUpDate       String?
+  createdAt          DateTime          @default(now())
 }
 
 model Coupon {
-  id          String     @id @default(cuid())
-  code        String     @unique
-  description String?
-  type        CouponType
-  value       Float
-  minAmount   Float?
-  maxUses     Int?
-  usedCount   Int        @default(0)
-  validFrom   String?
-  validTo     String?
-  active      Boolean    @default(true)
-  createdAt   DateTime   @default(now())
+  id                 String           @id @default(cuid())
+  code               String           @unique
+  description        String?
+  type               CouponType
+  value              Float
+  minAmount          Float?
+  maxUses            Int?
+  maxUsesPerPatient  Int?
+  applicableCategory ServiceCategory?
+  firstVisitOnly     Boolean          @default(false)
+  packageOnly        Boolean          @default(false)
+  usedCount          Int              @default(0)
+  validFrom          String?
+  validTo            String?
+  active             Boolean          @default(true)
+  createdAt          DateTime         @default(now())
 
   usages   CouponUsage[]
   invoices Invoice[]

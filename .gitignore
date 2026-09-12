@@ -50,3 +50,6 @@ prisma/*.db
 
 # Nest
 .nestcli
+
+# Uploaded files (local storage driver)
+/storage

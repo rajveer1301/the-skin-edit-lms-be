@@ -7,10 +7,16 @@ export interface LeadDto {
   firstName: string;
   lastName: string;
   phone: string;
+  whatsapp?: string;
   email?: string;
+  city?: string;
+  gender?: string;
   source: string;
   status: string;
+  interestCategory?: string;
   interestedIn?: string;
+  lostReason?: string;
+  convertedPatientId?: string;
   assignedToId?: string;
   assignedToName?: string;
   notes?: string;
@@ -26,10 +32,16 @@ export function mapLead(l: LeadWithAssignee): LeadDto {
     firstName: l.firstName,
     lastName: l.lastName,
     phone: l.phone,
+    whatsapp: l.whatsapp ?? undefined,
     email: l.email ?? undefined,
+    city: l.city ?? undefined,
+    gender: l.gender ?? undefined,
     source: l.source,
     status: l.status,
+    interestCategory: l.interestCategory ?? undefined,
     interestedIn: l.interestedIn ?? undefined,
+    lostReason: l.lostReason ?? undefined,
+    convertedPatientId: l.convertedPatientId ?? undefined,
     assignedToId: l.assignedToId ?? undefined,
     assignedToName: l.assignedTo
       ? `${l.assignedTo.firstName} ${l.assignedTo.lastName}`

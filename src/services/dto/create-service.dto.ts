@@ -26,9 +26,40 @@ export class CreateServiceDto {
   @Min(0)
   durationMinutes!: number;
 
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  bufferMinutes?: number;
+
   @IsNumber()
   @Min(0)
   price!: number;
+
+  @IsOptional()
+  @IsString()
+  hsnSac?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  gstPercent?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  requiresPatchTest?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requiresConsent?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isPackage?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  defaultSessionCount?: number;
 
   @IsOptional()
   @IsBoolean()

@@ -1,4 +1,4 @@
-import { CouponType } from '@prisma/client';
+import { CouponType, ServiceCategory } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
@@ -35,6 +35,23 @@ export class CreateCouponDto {
   @IsInt()
   @Min(1)
   maxUses?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxUsesPerPatient?: number;
+
+  @IsOptional()
+  @IsEnum(ServiceCategory)
+  applicableCategory?: ServiceCategory;
+
+  @IsOptional()
+  @IsBoolean()
+  firstVisitOnly?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  packageOnly?: boolean;
 
   @IsOptional()
   @IsString()

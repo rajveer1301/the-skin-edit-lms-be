@@ -89,25 +89,30 @@ export class LeadsService {
     if (!lead) {
       throw new NotFoundException('Lead not found');
     }
-    const [, patient] = await this.prisma.$transaction([
-      this.prisma.lead.update({
-        where: { id },
-        data: { status: LeadStatus.CONVERTED },
-      }),
-      this.prisma.patient.create({
+    const patient = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.patient.create({
         data: {
           firstName: lead.firstName,
           lastName: lead.lastName,
-          gender: dto.gender ?? Gender.OTHER,
+          gender: dto.gender ?? lead.gender ?? Gender.OTHER,
           phone: lead.phone,
+          whatsapp: lead.whatsapp,
           email: lead.email,
+          city: lead.city,
+          leadId: lead.id,
           allergies: [],
           skinConcerns: [],
           hairConcerns: [],
+          wellnessConcerns: [],
           notes: `Converted from lead. Interested in: ${lead.interestedIn ?? '-'}`,
         },
-      }),
-    ]);
+      });
+      await tx.lead.update({
+        where: { id },
+        data: { status: LeadStatus.CONVERTED, convertedPatientId: created.id },
+      });
+      return created;
+    });
     return mapPatient(patient);
   }
 

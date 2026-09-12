@@ -9,6 +9,9 @@ export type InvoiceWithRelations = Invoice & {
 export interface InvoiceItemDto {
   description: string;
   serviceId?: string;
+  productId?: string;
+  hsnSac?: string;
+  gstPercent?: number;
   quantity: number;
   unitPrice: number;
   total: number;
@@ -22,6 +25,20 @@ export interface PaymentDto {
   date: string;
   reference?: string;
   note?: string;
+  receiptNumber?: string;
+  paymentKind?: string;
+  instalmentNumber?: number;
+  instalmentOf?: number;
+}
+
+export interface PaymentReceiptDto extends PaymentDto {
+  invoiceNumber: string;
+  patientName: string;
+  billedToName?: string;
+  serviceSummary?: string;
+  invoiceTotal: number;
+  receivedToDate: number;
+  remainingAfter: number;
 }
 
 export interface InvoiceDto {
@@ -29,10 +46,16 @@ export interface InvoiceDto {
   number: string;
   patientId: string;
   patientName: string;
+  billedToName?: string;
+  appointmentId?: string;
+  treatmentId?: string;
   items: InvoiceItemDto[];
   subtotal: number;
   discount: number;
   tax: number;
+  cgst?: number;
+  sgst?: number;
+  roundOff?: number;
   total: number;
   amountPaid: number;
   balance: number;
@@ -49,7 +72,7 @@ export const INVOICE_INCLUDE = {
   patient: true,
   items: true,
   payments: true,
-} as const;
+};
 
 export function mapPayment(p: Payment): PaymentDto {
   return {
@@ -60,6 +83,10 @@ export function mapPayment(p: Payment): PaymentDto {
     date: p.date,
     reference: p.reference ?? undefined,
     note: p.note ?? undefined,
+    receiptNumber: p.receiptNumber ?? undefined,
+    paymentKind: p.paymentKind ?? undefined,
+    instalmentNumber: p.instalmentNumber ?? undefined,
+    instalmentOf: p.instalmentOf ?? undefined,
   };
 }
 
@@ -67,6 +94,9 @@ export function mapInvoiceItem(i: InvoiceItem): InvoiceItemDto {
   return {
     description: i.description,
     serviceId: i.serviceId ?? undefined,
+    productId: i.productId ?? undefined,
+    hsnSac: i.hsnSac ?? undefined,
+    gstPercent: i.gstPercent ?? undefined,
     quantity: i.quantity,
     unitPrice: i.unitPrice,
     total: i.total,
@@ -81,10 +111,16 @@ export function mapInvoice(inv: InvoiceWithRelations): InvoiceDto {
     patientName: inv.patient
       ? `${inv.patient.firstName} ${inv.patient.lastName}`
       : '',
+    billedToName: inv.billedToName ?? undefined,
+    appointmentId: inv.appointmentId ?? undefined,
+    treatmentId: inv.treatmentId ?? undefined,
     items: (inv.items ?? []).map(mapInvoiceItem),
     subtotal: inv.subtotal,
     discount: inv.discount,
     tax: inv.tax,
+    cgst: inv.cgst ?? undefined,
+    sgst: inv.sgst ?? undefined,
+    roundOff: inv.roundOff ?? undefined,
     total: inv.total,
     amountPaid: inv.amountPaid,
     balance: inv.balance,

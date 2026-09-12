@@ -31,19 +31,19 @@ export class AppointmentsController {
     return this.appointmentsService.findOne(id);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Post()
   create(@Body() dto: CreateAppointmentDto) {
     return this.appointmentsService.create(dto);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Put(':id')
   update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
     return this.appointmentsService.update(id, dto);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,

@@ -23,4 +23,8 @@ export class CreateStockMovementDto {
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @IsOptional()
+  @IsString()
+  treatmentId?: string;
 }

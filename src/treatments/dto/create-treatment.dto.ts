@@ -1,4 +1,4 @@
-import { TreatmentStatus } from '@prisma/client';
+import { TreatmentArea, TreatmentStatus } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
@@ -23,6 +23,14 @@ export class CreateTreatmentDto {
   @MinLength(1)
   doctorId!: string;
 
+  @IsOptional()
+  @IsString()
+  therapistName?: string;
+
+  @IsOptional()
+  @IsString()
+  appointmentId?: string;
+
   @IsString()
   @MinLength(1)
   date!: string;
@@ -40,6 +48,38 @@ export class CreateTreatmentDto {
   @Min(0)
   totalSessions?: number;
 
+  @IsOptional()
+  @IsEnum(TreatmentArea)
+  treatmentArea?: TreatmentArea;
+
+  @IsOptional()
+  @IsString()
+  parameters?: string;
+
+  @IsOptional()
+  @IsString()
+  consumablesUsed?: string;
+
+  @IsOptional()
+  @IsString()
+  adverseReaction?: string;
+
+  @IsOptional()
+  @IsString()
+  aftercare?: string;
+
+  @IsOptional()
+  @IsString()
+  nextSessionDate?: string;
+
+  @IsOptional()
+  @IsString()
+  diagnosis?: string;
+
+  @IsOptional()
+  @IsString()
+  trichoscopyNotes?: string;
+
   @IsNumber()
   @Min(0)
   price!: number;
@@ -54,7 +94,15 @@ export class CreateTreatmentDto {
 
   @IsOptional()
   @IsString()
+  beforeImageKey?: string;
+
+  @IsOptional()
+  @IsString()
   afterImageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  afterImageKey?: string;
 
   @IsOptional()
   @IsString()

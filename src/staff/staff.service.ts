@@ -71,6 +71,10 @@ export class StaffService {
         role: dto.role,
         active: dto.active,
         specialization: dto.specialization,
+        registrationNumber: dto.registrationNumber,
+        calendarColor: dto.calendarColor,
+        workingHours: dto.workingHours,
+        commissionPercent: dto.commissionPercent,
         passwordHash,
       },
     });
@@ -87,6 +91,10 @@ export class StaffService {
       role: dto.role,
       active: dto.active,
       specialization: dto.specialization,
+      registrationNumber: dto.registrationNumber,
+      calendarColor: dto.calendarColor,
+      workingHours: dto.workingHours,
+      commissionPercent: dto.commissionPercent,
     };
     if (dto.password) {
       data.passwordHash = await bcrypt.hash(dto.password, 10);

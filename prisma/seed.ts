@@ -87,9 +87,9 @@ async function seedUsers(): Promise<void> {
       lastName: 'Shah',
       email: 'neha@theskinedit.com',
       phone: '+91 98200 10003',
-      role: Role.DOCTOR,
+      role: Role.THERAPIST,
       active: true,
-      specialization: 'Trichologist',
+      specialization: 'Trichology therapist',
       createdAt: daysFromNow(-150),
     },
     {
@@ -359,16 +359,6 @@ async function seedAppointments(): Promise<void> {
   await prisma.appointment.createMany({ data: appointments });
 }
 
-// Tiny solid-color 1x1 PNGs, stored as buffers to demonstrate image storage.
-const RED_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-  'base64',
-);
-const GREEN_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-  'base64',
-);
-
 async function seedTreatments(): Promise<void> {
   const treatments = [
     {
@@ -382,10 +372,6 @@ async function seedTreatments(): Promise<void> {
       totalSessions: 6,
       price: 3000,
       notes: 'Tolerated well',
-      beforeImage: RED_PNG,
-      beforeImageType: 'image/png',
-      afterImage: GREEN_PNG,
-      afterImageType: 'image/png',
     },
     {
       id: 't_2',
@@ -397,10 +383,6 @@ async function seedTreatments(): Promise<void> {
       sessionNumber: 1,
       totalSessions: 3,
       price: 4500,
-      beforeImage: RED_PNG,
-      beforeImageType: 'image/png',
-      afterImage: GREEN_PNG,
-      afterImageType: 'image/png',
     },
     {
       id: 't_3',

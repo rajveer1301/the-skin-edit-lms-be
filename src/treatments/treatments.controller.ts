@@ -29,19 +29,19 @@ export class TreatmentsController {
     return this.treatmentsService.findOne(id);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST)
   @Post()
   create(@Body() dto: CreateTreatmentDto) {
     return this.treatmentsService.create(dto);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST)
   @Put(':id')
   update(@Param('id') id: string, @Body() dto: UpdateTreatmentDto) {
     return this.treatmentsService.update(id, dto);
   }
 
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.treatmentsService.remove(id);

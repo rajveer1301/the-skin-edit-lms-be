@@ -46,6 +46,35 @@ export class CreateProductDto {
   supplier?: string;
 
   @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @IsOptional()
+  @IsString()
+  batchLot?: string;
+
+  @IsOptional()
+  @IsString()
+  expiryDate?: string;
+
+  @IsOptional()
+  @IsString()
+  storageLocation?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  gstPercent?: number;
+
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  retailUse?: boolean;
+
+  @IsOptional()
   @IsBoolean()
   active?: boolean = true;
 }

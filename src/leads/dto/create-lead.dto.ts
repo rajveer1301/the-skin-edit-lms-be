@@ -1,4 +1,10 @@
-import { LeadSource, LeadStatus } from '@prisma/client';
+import {
+  Gender,
+  InterestCategory,
+  LeadLostReason,
+  LeadSource,
+  LeadStatus,
+} from '@prisma/client';
 import {
   IsEmail,
   IsEnum,
@@ -21,8 +27,20 @@ export class CreateLeadDto {
   phone!: string;
 
   @IsOptional()
+  @IsString()
+  whatsapp?: string;
+
+  @IsOptional()
   @IsEmail()
   email?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
 
   @IsEnum(LeadSource)
   source!: LeadSource;
@@ -31,8 +49,16 @@ export class CreateLeadDto {
   status!: LeadStatus;
 
   @IsOptional()
+  @IsEnum(InterestCategory)
+  interestCategory?: InterestCategory;
+
+  @IsOptional()
   @IsString()
   interestedIn?: string;
+
+  @IsOptional()
+  @IsEnum(LeadLostReason)
+  lostReason?: LeadLostReason;
 
   @IsOptional()
   @IsString()

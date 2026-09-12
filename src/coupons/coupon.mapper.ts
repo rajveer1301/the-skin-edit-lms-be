@@ -8,6 +8,10 @@ export interface CouponDto {
   value: number;
   minAmount?: number;
   maxUses?: number;
+  maxUsesPerPatient?: number;
+  applicableCategory?: string;
+  firstVisitOnly?: boolean;
+  packageOnly?: boolean;
   usedCount: number;
   validFrom?: string;
   validTo?: string;
@@ -36,6 +40,10 @@ export function mapCoupon(c: Coupon): CouponDto {
     value: c.value,
     minAmount: c.minAmount ?? undefined,
     maxUses: c.maxUses ?? undefined,
+    maxUsesPerPatient: c.maxUsesPerPatient ?? undefined,
+    applicableCategory: c.applicableCategory ?? undefined,
+    firstVisitOnly: c.firstVisitOnly,
+    packageOnly: c.packageOnly,
     usedCount: c.usedCount,
     validFrom: c.validFrom ?? undefined,
     validTo: c.validTo ?? undefined,
@@ -66,10 +74,11 @@ export function mapCouponUsage(u: CouponUsage): CouponUsageDto {
 export function computeCouponDiscount(
   coupon: Coupon,
   subtotal: number,
+  usedCount = coupon.usedCount,
 ): number {
   if (!coupon.active) return 0;
   if (coupon.minAmount != null && subtotal < coupon.minAmount) return 0;
-  if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) return 0;
+  if (coupon.maxUses != null && usedCount >= coupon.maxUses) return 0;
 
   const today = new Date().toISOString().slice(0, 10);
   if (coupon.validFrom && today < coupon.validFrom) return 0;

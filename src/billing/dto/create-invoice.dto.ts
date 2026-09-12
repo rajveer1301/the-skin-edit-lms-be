@@ -18,6 +18,19 @@ export class InvoiceItemInputDto {
   @IsString()
   serviceId?: string;
 
+  @IsOptional()
+  @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @IsString()
+  hsnSac?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  gstPercent?: number;
+
   @IsNumber()
   @Min(0)
   quantity!: number;
@@ -36,6 +49,18 @@ export class CreateInvoiceDto {
   @MinLength(1)
   patientId!: string;
 
+  @IsOptional()
+  @IsString()
+  billedToName?: string;
+
+  @IsOptional()
+  @IsString()
+  appointmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  treatmentId?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => InvoiceItemInputDto)
@@ -48,6 +73,18 @@ export class CreateInvoiceDto {
   @IsNumber()
   @Min(0)
   tax!: number;
+
+  @IsOptional()
+  @IsNumber()
+  cgst?: number;
+
+  @IsOptional()
+  @IsNumber()
+  sgst?: number;
+
+  @IsOptional()
+  @IsNumber()
+  roundOff?: number;
 
   @IsString()
   @MinLength(1)

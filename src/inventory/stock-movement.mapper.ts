@@ -11,6 +11,7 @@ export interface StockMovementDto {
   type: string;
   quantity: number;
   reason?: string;
+  treatmentId?: string;
   date: string;
   byUserName?: string;
 }
@@ -25,6 +26,7 @@ export function mapStockMovement(
     type: m.type,
     quantity: m.quantity,
     reason: m.reason ?? undefined,
+    treatmentId: m.treatmentId ?? undefined,
     date: m.date.toISOString(),
     byUserName: m.byUserName ?? undefined,
   };

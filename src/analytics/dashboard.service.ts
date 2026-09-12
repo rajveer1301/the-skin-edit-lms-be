@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppointmentStatus, Role } from '@prisma/client';
+import { AppointmentStatus, LeadStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   bucketKey,
@@ -27,6 +27,8 @@ export interface DashboardSummary {
   totalPatients: number;
   pendingInvoicesAmount: number;
   pendingInvoicesCount: number;
+  noShowRate: number;
+  leadConversionPercent: number;
   revenueSeries: RevenuePoint[];
   appointmentsByStatus: StatusCount[];
   recentActivity: ActivityItem[];
@@ -54,6 +56,7 @@ export class DashboardService {
       invoices,
       appointments,
       payments,
+      leads,
     ] = await Promise.all([
       this.prisma.appointment.count({
         where: { startTime: { gte: startOfToday, lt: endOfToday } },
@@ -67,6 +70,7 @@ export class DashboardService {
       }),
       this.prisma.appointment.findMany({ select: { status: true } }),
       this.prisma.payment.findMany({ select: { amount: true, date: true } }),
+      this.prisma.lead.findMany({ select: { status: true } }),
     ]);
 
     const pending = invoices.filter((i) => i.balance > 0);
@@ -81,6 +85,12 @@ export class DashboardService {
       count: appointments.filter((a) => a.status === status).length,
     }));
 
+    const noShows = appointments.filter(
+      (a) => a.status === AppointmentStatus.NO_SHOW,
+    ).length;
+    const converted = leads.filter((l) => l.status === LeadStatus.CONVERTED)
+      .length;
+
     return {
       appointmentsToday,
       // Revenue figures are restricted to SUPER_ADMIN.
@@ -89,6 +99,12 @@ export class DashboardService {
       totalPatients,
       pendingInvoicesAmount: pending.reduce((sum, i) => sum + i.balance, 0),
       pendingInvoicesCount: pending.length,
+      noShowRate: appointments.length
+        ? Math.round((noShows / appointments.length) * 100)
+        : 0,
+      leadConversionPercent: leads.length
+        ? Math.round((converted / leads.length) * 100)
+        : 0,
       revenueSeries: canSeeRevenue
         ? this.buildRevenueSeries(payments, now)
         : [],
