@@ -237,10 +237,10 @@ model Patient {
   lifestyleNotes         String?
   allergies              String[]
   allergyDetails         String?
-  medicalConditions      String[]
-  medications            String[]
+  medicalConditions      String[]          @default([])
+  medications            String[]          @default([])
   medicalHistory         String?
-  previousProcedures     String[]
+  previousProcedures     String[]          @default([])
   pregnancyStatus        String?
   familyHistoryAlopecia  Boolean?
   smokingStatus          String?

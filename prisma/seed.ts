@@ -294,7 +294,14 @@ async function seedPatients(): Promise<void> {
     },
   ];
   for (const p of patients) {
-    await prisma.patient.create({ data: p });
+    await prisma.patient.create({
+      data: {
+        medicalConditions: [],
+        medications: [],
+        previousProcedures: [],
+        ...p,
+      },
+    });
   }
 }
 
