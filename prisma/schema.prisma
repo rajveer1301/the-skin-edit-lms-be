@@ -279,6 +279,7 @@ model Patient {
   notes                  String?
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
+  driveFolderId          String?
 
   appointments Appointment[]
   treatments   Treatment[]
@@ -364,18 +365,23 @@ model Treatment {
   afterImageType   String?
   notes            String?
   createdAt        DateTime        @default(now())
+  beforeImageDriveId   String?
+  afterImageDriveId    String?
+  imagesDriveSyncedAt  DateTime?
 }
 
 model PatientDocument {
   id          String   @id @default(cuid())
-  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId   String
-  name        String
-  type        String
-  storageKey  String
-  contentType String
-  sizeBytes   Int
-  uploadedAt  DateTime @default(now())
+  patient        Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId      String
+  name           String
+  type           String
+  storageKey     String
+  contentType    String
+  sizeBytes      Int
+  uploadedAt     DateTime  @default(now())
+  driveFileId    String?
+  driveSyncedAt  DateTime?
 
   @@index([patientId, uploadedAt])
 }
