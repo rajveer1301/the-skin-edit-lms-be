@@ -311,8 +311,8 @@ model Appointment {
   id               String            @id @default(cuid())
   patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId        String
-  doctor           User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  doctorId         String
+  doctor           User?             @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctorId         String?
   service          ClinicService?    @relation(fields: [serviceId], references: [id])
   serviceId        String?
   visitType        VisitType         @default(CONSULTATION)

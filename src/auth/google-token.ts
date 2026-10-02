@@ -21,7 +21,15 @@ export async function verifyGoogleToken(
 
   if (clientId) {
     payload = await fetchTokenInfo(credential);
-    if (payload['aud'] !== clientId) {
+    const allowed = clientId
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    const aud = payload['aud'];
+    const audiences = (Array.isArray(aud) ? aud : [aud]).map((value) =>
+      String(value),
+    );
+    if (!audiences.some((value) => allowed.includes(value))) {
       throw new Error('Google token audience mismatch');
     }
   } else {

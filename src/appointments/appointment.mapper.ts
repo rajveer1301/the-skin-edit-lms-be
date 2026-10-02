@@ -10,7 +10,7 @@ export interface AppointmentDto {
   id: string;
   patientId: string;
   patientName: string;
-  doctorId: string;
+  doctorId: string | null;
   doctorName: string;
   serviceId?: string;
   serviceName?: string;
