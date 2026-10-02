@@ -341,8 +341,8 @@ model Treatment {
   patientId        String
   service          ClinicService   @relation(fields: [serviceId], references: [id])
   serviceId        String
-  doctor           User            @relation("DoctorTreatments", fields: [doctorId], references: [id])
-  doctorId         String
+  doctor           User?           @relation("DoctorTreatments", fields: [doctorId], references: [id])
+  doctorId         String?
   therapistName    String?
   appointmentId    String?
   date             String

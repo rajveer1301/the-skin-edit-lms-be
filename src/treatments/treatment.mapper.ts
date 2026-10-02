@@ -12,7 +12,7 @@ export interface TreatmentDto {
   patientName: string;
   serviceId: string;
   serviceName: string;
-  doctorId: string;
+  doctorId: string | null;
   doctorName: string;
   therapistName?: string;
   appointmentId?: string;
