@@ -9,6 +9,7 @@ import {
 } from '../common/utils/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { CreateServicesDto } from './dto/create-services.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Injectable()
@@ -55,16 +56,36 @@ export class ServicesService {
   }
 
   create(dto: CreateServiceDto): Promise<ClinicService> {
-    return this.prisma.clinicService.create({ data: dto });
+    return this.prisma.clinicService.create({
+      data: this.toData(dto),
+    });
+  }
+
+  createMany(dto: CreateServicesDto): Promise<ClinicService[]> {
+    const rows = dto.services.map((item) => this.toData(item));
+    return this.prisma.clinicService.createManyAndReturn({ data: rows });
+  }
+
+  private toData(dto: CreateServiceDto): Prisma.ClinicServiceCreateInput {
+    return {
+      ...dto,
+      parameterTemplate: dto.parameterTemplate as
+        Prisma.InputJsonValue | undefined,
+    };
   }
 
   async update(id: string, dto: UpdateServiceDto): Promise<ClinicService> {
-    await this.findOne(id);
-    return this.prisma.clinicService.update({ where: { id }, data: dto });
+    return this.prisma.clinicService.update({
+      where: { id },
+      data: {
+        ...dto,
+        parameterTemplate: dto.parameterTemplate as
+          Prisma.InputJsonValue | undefined,
+      },
+    });
   }
 
   async remove(id: string): Promise<{ success: boolean }> {
-    await this.findOne(id);
     await this.prisma.clinicService.delete({ where: { id } });
     return { success: true };
   }

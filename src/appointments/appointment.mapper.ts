@@ -1,17 +1,14 @@
-import { Appointment, ClinicService, Patient, User } from '@prisma/client';
+import { Appointment, ClinicService, Patient } from '@prisma/client';
 
 export type AppointmentWithRelations = Appointment & {
-  patient?: Patient | null;
-  doctor?: User | null;
-  service?: ClinicService | null;
+  patient?: Pick<Patient, 'firstName' | 'lastName'> | null;
+  service?: Pick<ClinicService, 'name'> | null;
 };
 
 export interface AppointmentDto {
   id: string;
   patientId: string;
   patientName: string;
-  doctorId: string | null;
-  doctorName: string;
   serviceId?: string;
   serviceName?: string;
   visitType: string;
@@ -27,6 +24,8 @@ export interface AppointmentDto {
   depositExpected?: number;
   treatmentId?: string;
   invoiceId?: string;
+  decision: string;
+  followUpDate?: string;
   startTime: string;
   endTime: string;
   status: string;
@@ -35,9 +34,8 @@ export interface AppointmentDto {
 }
 
 export const APPOINTMENT_INCLUDE = {
-  patient: true,
-  doctor: true,
-  service: true,
+  patient: { select: { firstName: true, lastName: true } },
+  service: { select: { name: true } },
 } as const;
 
 export function mapAppointment(a: AppointmentWithRelations): AppointmentDto {
@@ -47,8 +45,6 @@ export function mapAppointment(a: AppointmentWithRelations): AppointmentDto {
     patientName: a.patient
       ? `${a.patient.firstName} ${a.patient.lastName}`
       : '',
-    doctorId: a.doctorId,
-    doctorName: a.doctor ? `${a.doctor.firstName} ${a.doctor.lastName}` : '',
     serviceId: a.serviceId ?? undefined,
     serviceName: a.service?.name ?? undefined,
     visitType: a.visitType,
@@ -64,6 +60,8 @@ export function mapAppointment(a: AppointmentWithRelations): AppointmentDto {
     depositExpected: a.depositExpected ?? undefined,
     treatmentId: a.treatmentId ?? undefined,
     invoiceId: a.invoiceId ?? undefined,
+    decision: a.decision,
+    followUpDate: a.followUpDate ?? undefined,
     startTime: a.startTime.toISOString(),
     endTime: a.endTime.toISOString(),
     status: a.status,

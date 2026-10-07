@@ -1,7 +1,12 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
   IsNumber,
+  IsInt,
+  MaxLength,
   IsOptional,
   IsString,
   Min,
@@ -24,6 +29,10 @@ export class InvoiceItemInputDto {
 
   @IsOptional()
   @IsString()
+  planItemId?: string;
+
+  @IsOptional()
+  @IsString()
   hsnSac?: string;
 
   @IsOptional()
@@ -31,8 +40,8 @@ export class InvoiceItemInputDto {
   @Min(0)
   gstPercent?: number;
 
-  @IsNumber()
-  @Min(0)
+  @IsInt()
+  @Min(1)
   quantity!: number;
 
   @IsNumber()
@@ -61,7 +70,13 @@ export class CreateInvoiceDto {
   @IsString()
   treatmentId?: string;
 
+  @IsOptional()
+  @IsString()
+  planId?: string;
+
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(200)
   @ValidateNested({ each: true })
   @Type(() => InvoiceItemInputDto)
   items!: InvoiceItemInputDto[];
@@ -88,10 +103,12 @@ export class CreateInvoiceDto {
 
   @IsString()
   @MinLength(1)
+  @IsCalendarDate()
   issuedDate!: string;
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   dueDate?: string;
 
   @IsOptional()
@@ -101,4 +118,9 @@ export class CreateInvoiceDto {
   @IsOptional()
   @IsString()
   notes?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  @MinLength(1)
+  idempotencyKey?: string;
 }

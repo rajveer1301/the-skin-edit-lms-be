@@ -19,9 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        config.get<string>('JWT_ACCESS_SECRET') ??
-        'dev-access-secret-change-me',
+      secretOrKey: config.getOrThrow<string>('JWT_ACCESS_SECRET'),
     });
   }
 
@@ -30,6 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   ): Promise<{ id: string; email: string; role: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
+      select: { id: true, email: true, role: true, active: true },
     });
     if (!user || !user.active) {
       throw new UnauthorizedException('User is inactive or does not exist');

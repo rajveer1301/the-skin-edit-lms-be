@@ -48,13 +48,18 @@ export class GoogleDriveService implements OnModuleInit {
     }
 
     try {
-      const credentials = inlineKey ? JSON.parse(inlineKey) : undefined;
+      const credentials = inlineKey
+        ? (JSON.parse(inlineKey) as {
+            client_email?: string;
+            private_key?: string;
+          })
+        : undefined;
       const auth = new google.auth.GoogleAuth({
         credentials,
         keyFile: !credentials ? keyFile : undefined,
         scopes: ['https://www.googleapis.com/auth/drive'],
       });
-      this.drive = google.drive({ version: 'v3', auth });
+      this.drive = google.drive({ version: 'v3', auth, timeout: 60000 });
       this.rootFolderId = rootFolderId;
       this.enabled = true;
       this.logger.log('Google Drive sync enabled.');

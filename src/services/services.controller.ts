@@ -12,6 +12,7 @@ import { Role } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ListQueryDto } from '../common/dto/list-query.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { CreateServicesDto } from './dto/create-services.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServicesService } from './services.service';
 
@@ -33,6 +34,12 @@ export class ServicesController {
   @Post()
   create(@Body() dto: CreateServiceDto) {
     return this.servicesService.create(dto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Post('bulk')
+  createMany(@Body() dto: CreateServicesDto) {
+    return this.servicesService.createMany(dto);
   }
 
   @Roles(Role.ADMIN)

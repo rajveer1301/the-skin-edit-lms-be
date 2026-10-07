@@ -310,7 +310,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_1',
       patientId: 'p_1',
-      doctorId: 'u_doc1',
       serviceId: 's_1',
       startTime: daysFromNow(0, 11, 0),
       endTime: daysFromNow(0, 12, 0),
@@ -320,7 +319,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_2',
       patientId: 'p_2',
-      doctorId: 'u_doc2',
       serviceId: 's_4',
       startTime: daysFromNow(0, 14, 0),
       endTime: daysFromNow(0, 15, 0),
@@ -329,7 +327,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_3',
       patientId: 'p_3',
-      doctorId: 'u_doc1',
       serviceId: 's_2',
       startTime: daysFromNow(1, 10, 0),
       endTime: daysFromNow(1, 10, 45),
@@ -338,7 +335,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_4',
       patientId: 'p_5',
-      doctorId: 'u_doc1',
       serviceId: 's_5',
       startTime: daysFromNow(2, 16, 0),
       endTime: daysFromNow(2, 16, 30),
@@ -347,7 +343,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_5',
       patientId: 'p_4',
-      doctorId: 'u_doc2',
       serviceId: 's_3',
       startTime: daysFromNow(-3, 12, 0),
       endTime: daysFromNow(-3, 12, 30),
@@ -356,7 +351,6 @@ async function seedAppointments(): Promise<void> {
     {
       id: 'a_6',
       patientId: 'p_1',
-      doctorId: 'u_doc1',
       serviceId: 's_7',
       startTime: daysFromNow(-7, 9, 30),
       endTime: daysFromNow(-7, 9, 50),
@@ -372,7 +366,6 @@ async function seedTreatments(): Promise<void> {
       id: 't_1',
       patientId: 'p_4',
       serviceId: 's_3',
-      doctorId: 'u_doc2',
       date: isoDate(-3),
       status: TreatmentStatus.COMPLETED,
       sessionNumber: 2,
@@ -384,7 +377,6 @@ async function seedTreatments(): Promise<void> {
       id: 't_2',
       patientId: 'p_1',
       serviceId: 's_1',
-      doctorId: 'u_doc1',
       date: isoDate(-30),
       status: TreatmentStatus.COMPLETED,
       sessionNumber: 1,
@@ -395,7 +387,6 @@ async function seedTreatments(): Promise<void> {
       id: 't_3',
       patientId: 'p_2',
       serviceId: 's_4',
-      doctorId: 'u_doc2',
       date: isoDate(0),
       status: TreatmentStatus.IN_PROGRESS,
       sessionNumber: 1,
@@ -406,7 +397,6 @@ async function seedTreatments(): Promise<void> {
       id: 't_4',
       patientId: 'p_1',
       serviceId: 's_7',
-      doctorId: 'u_doc1',
       date: isoDate(-30),
       status: TreatmentStatus.COMPLETED,
       sessionNumber: 1,

@@ -1,3 +1,5 @@
+import { clinicDay } from '../common/utils/dates';
+import { money } from '../common/utils/money';
 import { Coupon, CouponUsage } from '@prisma/client';
 
 export interface CouponDto {
@@ -80,11 +82,11 @@ export function computeCouponDiscount(
   if (coupon.minAmount != null && subtotal < coupon.minAmount) return 0;
   if (coupon.maxUses != null && usedCount >= coupon.maxUses) return 0;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = clinicDay();
   if (coupon.validFrom && today < coupon.validFrom) return 0;
   if (coupon.validTo && today > coupon.validTo) return 0;
 
   const raw =
     coupon.type === 'PERCENT' ? (subtotal * coupon.value) / 100 : coupon.value;
-  return Math.min(Math.round(raw), subtotal);
+  return Math.min(money(raw), subtotal);
 }

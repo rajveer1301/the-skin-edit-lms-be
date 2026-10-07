@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AppointmentStatus, Prisma } from '@prisma/client';
 import { Paginated } from '../common/interfaces/paginated.interface';
 import { getPageParams, paginated } from '../common/utils/pagination';
@@ -22,7 +26,6 @@ export class AppointmentsService {
     const params = getPageParams(query);
     const where: Prisma.AppointmentWhereInput = {};
     if (query.status) where.status = query.status;
-    if (query.doctorId) where.doctorId = query.doctorId;
     if (query.patientId) where.patientId = query.patientId;
     if (query.from || query.to) {
       where.startTime = {};
@@ -41,14 +44,6 @@ export class AppointmentsService {
             lastName: { contains: query.search, mode: 'insensitive' },
           },
         },
-        {
-          doctor: {
-            firstName: { contains: query.search, mode: 'insensitive' },
-          },
-        },
-        {
-          doctor: { lastName: { contains: query.search, mode: 'insensitive' } },
-        },
         { service: { name: { contains: query.search, mode: 'insensitive' } } },
       ];
     }
@@ -56,7 +51,7 @@ export class AppointmentsService {
       this.prisma.appointment.findMany({
         where,
         include: APPOINTMENT_INCLUDE,
-        orderBy: { startTime: 'desc' },
+        orderBy: [{ startTime: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),
@@ -77,10 +72,10 @@ export class AppointmentsService {
   }
 
   async create(dto: CreateAppointmentDto): Promise<AppointmentDto> {
+    await this.validate(dto);
     const appt = await this.prisma.appointment.create({
       data: {
         patientId: dto.patientId,
-        doctorId: dto.doctorId,
         serviceId: dto.serviceId,
         visitType: dto.visitType,
         chiefComplaint: dto.chiefComplaint,
@@ -93,6 +88,8 @@ export class AppointmentsService {
         bookingSource: dto.bookingSource,
         reminderChannel: dto.reminderChannel,
         depositExpected: dto.depositExpected,
+        decision: dto.decision,
+        followUpDate: dto.followUpDate,
         startTime: new Date(dto.startTime),
         endTime: new Date(dto.endTime),
         status: dto.status,
@@ -104,12 +101,14 @@ export class AppointmentsService {
   }
 
   async update(id: string, dto: UpdateAppointmentDto): Promise<AppointmentDto> {
-    await this.ensureExists(id);
+    const existing = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id },
+    });
+    await this.validate(dto, existing);
     const appt = await this.prisma.appointment.update({
       where: { id },
       data: {
         patientId: dto.patientId,
-        doctorId: dto.doctorId,
         serviceId: dto.serviceId,
         visitType: dto.visitType,
         chiefComplaint: dto.chiefComplaint,
@@ -122,6 +121,8 @@ export class AppointmentsService {
         bookingSource: dto.bookingSource,
         reminderChannel: dto.reminderChannel,
         depositExpected: dto.depositExpected,
+        decision: dto.decision,
+        followUpDate: dto.followUpDate,
         startTime: dto.startTime ? new Date(dto.startTime) : undefined,
         endTime: dto.endTime ? new Date(dto.endTime) : undefined,
         status: dto.status,
@@ -136,7 +137,6 @@ export class AppointmentsService {
     id: string,
     status: AppointmentStatus,
   ): Promise<AppointmentDto> {
-    await this.ensureExists(id);
     const appt = await this.prisma.appointment.update({
       where: { id },
       data: { status },
@@ -146,9 +146,35 @@ export class AppointmentsService {
   }
 
   async remove(id: string): Promise<{ success: boolean }> {
-    await this.ensureExists(id);
     await this.prisma.appointment.delete({ where: { id } });
     return { success: true };
+  }
+
+  private async validate(
+    dto: Partial<CreateAppointmentDto>,
+    existing?: {
+      patientId: string;
+      startTime: Date;
+      endTime: Date;
+      serviceId: string | null;
+    },
+  ) {
+    const start = dto.startTime ? new Date(dto.startTime) : existing?.startTime;
+    const end = dto.endTime ? new Date(dto.endTime) : existing?.endTime;
+    if (!start || !end || !(end > start))
+      throw new BadRequestException('Appointment end must be after its start');
+    if (existing && dto.patientId && dto.patientId !== existing.patientId)
+      throw new BadRequestException(
+        'Appointments cannot be reassigned to another patient',
+      );
+    if (
+      dto.serviceId &&
+      dto.serviceId !== existing?.serviceId &&
+      !(await this.prisma.clinicService.count({
+        where: { id: dto.serviceId, active: true },
+      }))
+    )
+      throw new BadRequestException('Choose an active service');
   }
 
   private async ensureExists(id: string): Promise<void> {

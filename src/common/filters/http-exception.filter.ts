@@ -33,6 +33,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (exception.code === 'P2025') {
         status = HttpStatus.NOT_FOUND;
         message = 'Resource not found';
+      } else if (exception.code === 'P2034') {
+        status = HttpStatus.SERVICE_UNAVAILABLE;
+        message = 'Concurrent update; please retry the request';
       } else if (exception.code === 'P2002') {
         status = HttpStatus.CONFLICT;
         const target = (exception.meta?.target as string[] | undefined)?.join(
@@ -47,10 +50,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    console.log(exception);
-
     if (status >= 500) {
-      this.logger.error(`${request.method} ${request.url}`, exception as Error);
+      this.logger.error(
+        `${request.method} ${request.url}`,
+        exception instanceof Error ? exception.name : 'UnknownError',
+      );
     }
 
     response.status(status).json({

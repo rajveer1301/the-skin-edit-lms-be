@@ -1,7 +1,7 @@
 import { Invoice, InvoiceItem, Patient, Payment } from '@prisma/client';
 
 export type InvoiceWithRelations = Invoice & {
-  patient?: Patient | null;
+  patient?: Pick<Patient, 'firstName' | 'lastName'> | null;
   items?: InvoiceItem[];
   payments?: Payment[];
 };
@@ -10,6 +10,7 @@ export interface InvoiceItemDto {
   description: string;
   serviceId?: string;
   productId?: string;
+  planItemId?: string;
   hsnSac?: string;
   gstPercent?: number;
   quantity: number;
@@ -49,6 +50,7 @@ export interface InvoiceDto {
   billedToName?: string;
   appointmentId?: string;
   treatmentId?: string;
+  planId?: string;
   items: InvoiceItemDto[];
   subtotal: number;
   discount: number;
@@ -69,10 +71,10 @@ export interface InvoiceDto {
 }
 
 export const INVOICE_INCLUDE = {
-  patient: true,
+  patient: { select: { firstName: true, lastName: true } },
   items: true,
   payments: true,
-};
+} as const;
 
 export function mapPayment(p: Payment): PaymentDto {
   return {
@@ -95,6 +97,7 @@ export function mapInvoiceItem(i: InvoiceItem): InvoiceItemDto {
     description: i.description,
     serviceId: i.serviceId ?? undefined,
     productId: i.productId ?? undefined,
+    planItemId: i.planItemId ?? undefined,
     hsnSac: i.hsnSac ?? undefined,
     gstPercent: i.gstPercent ?? undefined,
     quantity: i.quantity,
@@ -114,6 +117,7 @@ export function mapInvoice(inv: InvoiceWithRelations): InvoiceDto {
     billedToName: inv.billedToName ?? undefined,
     appointmentId: inv.appointmentId ?? undefined,
     treatmentId: inv.treatmentId ?? undefined,
+    planId: inv.planId ?? undefined,
     items: (inv.items ?? []).map(mapInvoiceItem),
     subtotal: inv.subtotal,
     discount: inv.discount,

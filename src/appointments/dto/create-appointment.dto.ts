@@ -1,6 +1,8 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import {
   AppointmentStatus,
   BookingSource,
+  ConsultDecision,
   PrepStatus,
   ReminderChannel,
   TreatmentArea,
@@ -21,11 +23,6 @@ export class CreateAppointmentDto {
   @IsString()
   @MinLength(1)
   patientId!: string;
-
-  @IsOptional()
-  @IsString()
-  @MinLength(1)
-  doctorId?: string;
 
   @IsOptional()
   @IsString()
@@ -77,6 +74,15 @@ export class CreateAppointmentDto {
   @IsNumber()
   @Min(0)
   depositExpected?: number;
+
+  @IsOptional()
+  @IsEnum(ConsultDecision)
+  decision?: ConsultDecision;
+
+  @IsOptional()
+  @IsString()
+  @IsCalendarDate()
+  followUpDate?: string;
 
   @IsDateString()
   startTime!: string;

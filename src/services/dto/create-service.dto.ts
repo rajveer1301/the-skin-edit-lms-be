@@ -1,5 +1,7 @@
+import { Type } from 'class-transformer';
 import { ServiceCategory } from '@prisma/client';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -8,7 +10,9 @@ import {
   IsString,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { ParameterTemplateFieldDto } from './parameter-template-field.dto';
 
 export class CreateServiceDto {
   @IsString()
@@ -62,6 +66,17 @@ export class CreateServiceDto {
   defaultSessionCount?: number;
 
   @IsOptional()
+  @IsInt()
+  @Min(0)
+  defaultIntervalDays?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParameterTemplateFieldDto)
+  parameterTemplate?: ParameterTemplateFieldDto[];
+
+  @IsOptional()
   @IsBoolean()
-  active?: boolean = true;
+  active?: boolean;
 }

@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { ListQueryDto } from '../common/dto/list-query.dto';
 import { Paginated } from '../common/interfaces/paginated.interface';
@@ -12,8 +17,6 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
-
-const DEFAULT_PASSWORD = 'password123';
 
 @Injectable()
 export class StaffService {
@@ -57,11 +60,11 @@ export class StaffService {
     return mapUser(user);
   }
 
-  async create(dto: CreateStaffDto): Promise<UserDto> {
-    const passwordHash = await bcrypt.hash(
-      dto.password ?? DEFAULT_PASSWORD,
-      10,
-    );
+  async create(dto: CreateStaffDto, actorRole: string): Promise<UserDto> {
+    this.assertRole(actorRole, dto.role);
+    if (!dto.password)
+      throw new BadRequestException('A password is required for new staff');
+    const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
       data: {
         firstName: dto.firstName,
@@ -81,8 +84,16 @@ export class StaffService {
     return mapUser(user);
   }
 
-  async update(id: string, dto: UpdateStaffDto): Promise<UserDto> {
-    await this.ensureExists(id);
+  async update(
+    id: string,
+    dto: UpdateStaffDto,
+    actorRole: string,
+  ): Promise<UserDto> {
+    const existing = await this.prisma.user.findUniqueOrThrow({
+      where: { id },
+    });
+    this.assertRole(actorRole, existing.role);
+    this.assertRole(actorRole, dto.role);
     const data: Prisma.UserUpdateInput = {
       firstName: dto.firstName,
       lastName: dto.lastName,
@@ -96,17 +107,45 @@ export class StaffService {
       workingHours: dto.workingHours,
       commissionPercent: dto.commissionPercent,
     };
+    if (dto.active === false || dto.role !== undefined)
+      data.refreshToken = null;
     if (dto.password) {
+      data.refreshToken = null;
       data.passwordHash = await bcrypt.hash(dto.password, 10);
     }
-    const user = await this.prisma.user.update({ where: { id }, data });
+    const user = await this.prisma.user.update({
+      where: {
+        id,
+        ...(actorRole !== Role.SUPER_ADMIN
+          ? { role: { not: Role.SUPER_ADMIN } }
+          : {}),
+      },
+      data,
+    });
     return mapUser(user);
   }
 
-  async remove(id: string): Promise<{ success: boolean }> {
-    await this.ensureExists(id);
-    await this.prisma.user.delete({ where: { id } });
+  async remove(id: string, actorRole: string): Promise<{ success: boolean }> {
+    const existing = await this.prisma.user.findUniqueOrThrow({
+      where: { id },
+    });
+    this.assertRole(actorRole, existing.role);
+    await this.prisma.user.delete({
+      where: {
+        id,
+        ...(actorRole !== Role.SUPER_ADMIN
+          ? { role: { not: Role.SUPER_ADMIN } }
+          : {}),
+      },
+    });
     return { success: true };
+  }
+
+  private assertRole(actor: string, target?: Role): void {
+    if (target === Role.SUPER_ADMIN && actor !== Role.SUPER_ADMIN)
+      throw new ForbiddenException(
+        'Only a super admin can manage super admins',
+      );
   }
 
   private async ensureExists(id: string): Promise<void> {

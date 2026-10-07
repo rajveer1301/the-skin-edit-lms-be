@@ -61,6 +61,7 @@ export class PatientsController {
     return this.patientsService.treatments(id, query);
   }
 
+  @Roles(Role.ADMIN, Role.ACCOUNTANT, Role.RECEPTIONIST)
   @Get(':id/invoices')
   invoices(@Param('id') id: string, @Query() query: ListQueryDto) {
     return this.patientsService.invoices(id, query);
@@ -84,8 +85,15 @@ export class PatientsController {
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name?: string,
     @Body('type') type?: string,
+    @Body('planId') planId?: string,
+    @Body('appointmentId') appointmentId?: string,
   ) {
-    return this.patientsService.uploadDocument(id, file, { name, type });
+    return this.patientsService.uploadDocument(id, file, {
+      name,
+      type,
+      planId,
+      appointmentId,
+    });
   }
 
   @Roles(Role.ADMIN, Role.DOCTOR, Role.THERAPIST, Role.RECEPTIONIST)

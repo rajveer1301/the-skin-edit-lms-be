@@ -1,3 +1,5 @@
+import { google } from 'googleapis';
+
 export interface GoogleProfile {
   email: string;
   firstName: string;
@@ -5,80 +7,28 @@ export interface GoogleProfile {
   picture?: string;
 }
 
-/**
- * Verifies a Google ID token and extracts the profile.
- *
- * When GOOGLE_CLIENT_ID is configured the token is validated against Google's
- * tokeninfo endpoint (checking signature validity and audience). Otherwise
- * (local/demo environments) the JWT payload is decoded without verification so
- * the flow remains usable without external configuration.
- */
+const verifier = new google.auth.OAuth2();
+
 export async function verifyGoogleToken(
   credential: string,
   clientId?: string,
 ): Promise<GoogleProfile> {
-  let payload: Record<string, unknown>;
-
-  if (clientId) {
-    payload = await fetchTokenInfo(credential);
-    const allowed = clientId
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean);
-    const aud = payload['aud'];
-    const audiences = (Array.isArray(aud) ? aud : [aud]).map((value) =>
-      String(value),
-    );
-    if (!audiences.some((value) => allowed.includes(value))) {
-      throw new Error('Google token audience mismatch');
-    }
-  } else {
-    payload = decodeJwtPayload(credential);
-  }
-
-  const email = asString(payload['email']).toLowerCase();
-  if (!email) {
-    throw new Error('Google token did not contain an email');
-  }
-
-  const givenName = asString(payload['given_name']);
-  const familyName = asString(payload['family_name']);
-  const fullName = asString(payload['name']);
-  const [fallbackFirst, ...fallbackRest] = (
-    fullName || email.split('@')[0]
-  ).split(' ');
-
-  const picture = asString(payload['picture']);
-
+  const audience = clientId
+    ?.split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (!audience?.length) throw new Error('Google sign-in is not configured');
+  const ticket = await verifier.verifyIdToken({
+    idToken: credential,
+    audience,
+  });
+  const payload = ticket.getPayload();
+  if (!payload?.email || !payload.email_verified)
+    throw new Error('A verified Google email is required');
   return {
-    email,
-    firstName: givenName || fallbackFirst || 'Google',
-    lastName: familyName || fallbackRest.join(' ') || 'User',
-    picture: picture || undefined,
+    email: payload.email.toLowerCase(),
+    firstName: payload.given_name || '',
+    lastName: payload.family_name || '',
+    picture: payload.picture,
   };
-}
-
-function asString(value: unknown): string {
-  return typeof value === 'string' ? value : '';
-}
-
-async function fetchTokenInfo(
-  credential: string,
-): Promise<Record<string, unknown>> {
-  const res = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
-  );
-  if (!res.ok) {
-    throw new Error('Failed to verify Google token');
-  }
-  return (await res.json()) as Record<string, unknown>;
-}
-
-function decodeJwtPayload(token: string): Record<string, unknown> {
-  const parts = token.split('.');
-  if (parts.length < 2) {
-    throw new Error('Malformed Google credential');
-  }
-  const json = Buffer.from(parts[1], 'base64').toString('utf8');
-  return JSON.parse(json) as Record<string, unknown>;
 }

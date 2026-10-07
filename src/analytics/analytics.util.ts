@@ -1,3 +1,4 @@
+import { clinicDay } from '../common/utils/dates';
 export interface RevenuePoint {
   label: string;
   value: number;
@@ -26,12 +27,13 @@ export interface MonthBucket {
 
 export function lastSixMonths(now = new Date()): MonthBucket[] {
   const buckets: MonthBucket[] = [];
+  const [year, month] = clinicDay(now).split('-').map(Number);
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(Date.UTC(year, month - 1 - i, 1));
     buckets.push({
-      label: MONTHS[d.getMonth()],
-      year: d.getFullYear(),
-      month: d.getMonth(),
+      label: MONTHS[d.getUTCMonth()],
+      year: d.getUTCFullYear(),
+      month: d.getUTCMonth(),
     });
   }
   return buckets;

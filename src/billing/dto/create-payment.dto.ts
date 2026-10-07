@@ -1,7 +1,10 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import { PaymentKind, PaymentMethod } from '@prisma/client';
 import {
   IsEnum,
   IsNumber,
+  IsInt,
+  MaxLength,
   IsOptional,
   IsString,
   Min,
@@ -10,7 +13,7 @@ import {
 
 export class CreatePaymentDto {
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   amount!: number;
 
   @IsEnum(PaymentMethod)
@@ -18,6 +21,7 @@ export class CreatePaymentDto {
 
   @IsString()
   @MinLength(1)
+  @IsCalendarDate()
   date!: string;
 
   @IsOptional()
@@ -33,12 +37,17 @@ export class CreatePaymentDto {
   paymentKind?: PaymentKind;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   instalmentNumber?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   instalmentOf?: number;
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  @MinLength(1)
+  idempotencyKey?: string;
 }

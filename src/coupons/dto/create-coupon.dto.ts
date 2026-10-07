@@ -1,3 +1,4 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import { CouponType, ServiceCategory } from '@prisma/client';
 import {
   IsBoolean,
@@ -55,10 +56,12 @@ export class CreateCouponDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   validFrom?: string;
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   validTo?: string;
 
   @IsOptional()

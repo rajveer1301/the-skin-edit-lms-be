@@ -1,0 +1,848 @@
+{
+  "services": [
+    {
+      "name": "LHR - Full Body",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Full Body (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 42000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Face",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Face (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 8000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Face & Neck",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Face & Neck (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Neck",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Neck (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 4800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Upper Lips",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 999,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Upper Lips (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 4000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chin & Extended Neck",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 1800,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chin & Extended Neck (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 7200,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Cheeks",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Cheeks (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 4800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Side Locks",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Side Locks (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 4800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Underarms",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 1800,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Underarms (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 7200,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Hands - Half",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2200,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Hands - Half (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 8800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Hands - Full",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2800,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Hands - Full (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 11200,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chest",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chest (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chest & Abdomen",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 3000,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Chest & Abdomen (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 12000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Back - Half",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Back - Half (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Back - Full",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 3000,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Back - Full (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 12000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Beard Shaping",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Beard Shaping (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 8000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Legs - Half",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2200,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Legs - Half (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 8800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Legs - Full",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2800,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Legs - Full (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 11200,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Private Areas",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Private Areas (8 Sessions)",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8,
+      "description": "Laser Hair Reduction"
+    },
+    {
+      "name": "LHR - Any 3 Small Body Parts",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 13000,
+      "active": true,
+      "isPackage": true,
+      "description": "Laser Hair Reduction combination package"
+    },
+    {
+      "name": "LHR - Any 3 Large Body Parts",
+      "category": "LASER",
+      "durationMinutes": 45,
+      "price": 29000,
+      "active": true,
+      "isPackage": true,
+      "description": "Laser Hair Reduction combination package"
+    },
+    {
+      "name": "Warts Removal",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 500,
+      "active": true,
+      "description": "Priced per wart"
+    },
+    {
+      "name": "Carbon Peel / Hollywood Peel",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true
+    },
+    {
+      "name": "Carbon Peel / Hollywood Peel (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Advanced Pigmentation Correction",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4500,
+      "active": true
+    },
+    {
+      "name": "Advanced Pigmentation Correction (8 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 20000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "Vampire Facial",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4500,
+      "active": true
+    },
+    {
+      "name": "Vampire Facial (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 22000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "PRP Face",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true
+    },
+    {
+      "name": "PRP Face (8 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 14000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "Under Eye Treatment",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 3000,
+      "active": true
+    },
+    {
+      "name": "Under Eye Treatment (8 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 16800,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "Exosome Face",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 8500,
+      "active": true
+    },
+    {
+      "name": "Exosome Face (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 38250,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Exosome Face (8 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 47600,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "Glutathione",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 5000,
+      "active": true
+    },
+    {
+      "name": "Glutathione (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 21000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Glutathione (10 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 32500,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 10
+    },
+    {
+      "name": "Party Peel",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true
+    },
+    {
+      "name": "Party Peel (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 8400,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "PRP Hair",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true
+    },
+    {
+      "name": "PRP Hair (8 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 14000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "QR678",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 7000,
+      "active": true
+    },
+    {
+      "name": "QR678 (5 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 27500,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 5
+    },
+    {
+      "name": "QR678 (10 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 50000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 10
+    },
+    {
+      "name": "Exosome Hair",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 10000,
+      "active": true
+    },
+    {
+      "name": "Exosome Hair (6 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 42000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Exosome Hair (8 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 48000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 8
+    },
+    {
+      "name": "Dandruff Treatment",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 1500,
+      "active": true
+    },
+    {
+      "name": "Dandruff Treatment (6 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 6300,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Hair Fall Control Program",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true
+    },
+    {
+      "name": "Hair Fall Control Program (6 Sessions)",
+      "category": "HAIR",
+      "durationMinutes": 45,
+      "price": 10500,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6
+    },
+    {
+      "name": "Medi-Facial",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Facials & Medi-Facials"
+    },
+    {
+      "name": "Korean Glass - Skin Protocol",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 3500,
+      "active": true,
+      "description": "Facials & Medi-Facials"
+    },
+    {
+      "name": "Premium Korean Glass / Glow Protocol",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4500,
+      "active": true,
+      "description": "Facials & Medi-Facials"
+    },
+    {
+      "name": "Hydrafacial - Basic",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 900,
+      "active": true,
+      "description": "Facials & Medi-Facials. Regular price \u20b92,999"
+    },
+    {
+      "name": "Party Glow Hydra",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1500,
+      "active": true,
+      "description": "Facials & Medi-Facials. Regular price \u20b92,499"
+    },
+    {
+      "name": "Hydrafacial - Anti-Aging",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1999,
+      "active": true,
+      "description": "Facials & Medi-Facials. Regular price \u20b92,999"
+    },
+    {
+      "name": "Hydra 3 in 1",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2499,
+      "active": true,
+      "description": "Facials & Medi-Facials. Regular price \u20b93,499"
+    },
+    {
+      "name": "Advanced Hydra",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2999,
+      "active": true,
+      "description": "Facials & Medi-Facials. Regular price \u20b93,999"
+    },
+    {
+      "name": "Chemical Peel - Face",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1500,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Face + Neck",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Underarms",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1500,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Neck",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Half Hands",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1500,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Full Hands",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2200,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Private Area",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Chest",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Half Back",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Full Back",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 3000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Abdomen",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Chest + Abdomen",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 3200,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Half Legs",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 2500,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Full Legs",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4000,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Knees",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Chemical Peel - Feet",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 1200,
+      "active": true,
+      "description": "Chemical Peels"
+    },
+    {
+      "name": "Pigmentation Peel Course (3 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 3,
+      "description": "Peel Courses"
+    },
+    {
+      "name": "Pigmentation Peel Course (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 7500,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6,
+      "description": "Peel Courses"
+    },
+    {
+      "name": "Acne Peel Course (3 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 4500,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 3,
+      "description": "Peel Courses"
+    },
+    {
+      "name": "Acne Peel Course (6 Sessions)",
+      "category": "SKIN",
+      "durationMinutes": 45,
+      "price": 8000,
+      "active": true,
+      "isPackage": true,
+      "defaultSessionCount": 6,
+      "description": "Peel Courses"
+    }
+  ]
+}

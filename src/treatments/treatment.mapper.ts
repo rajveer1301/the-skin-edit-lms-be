@@ -1,9 +1,8 @@
-import { ClinicService, Patient, Treatment, User } from '@prisma/client';
+import { ClinicService, Patient, Prisma, Treatment } from '@prisma/client';
 
 export type TreatmentWithRelations = Treatment & {
-  patient?: Patient | null;
-  doctor?: User | null;
-  service?: ClinicService | null;
+  patient?: Pick<Patient, 'firstName' | 'lastName'> | null;
+  service?: Pick<ClinicService, 'name'> | null;
 };
 
 export interface TreatmentDto {
@@ -12,8 +11,6 @@ export interface TreatmentDto {
   patientName: string;
   serviceId: string;
   serviceName: string;
-  doctorId: string | null;
-  doctorName: string;
   therapistName?: string;
   appointmentId?: string;
   date: string;
@@ -30,6 +27,8 @@ export interface TreatmentDto {
   trichoscopyNotes?: string;
   price: number;
   isComplementary: boolean;
+  planItemId?: string;
+  readings?: Prisma.JsonValue;
   beforeImageKey?: string;
   beforeImageUrl?: string;
   afterImageKey?: string;
@@ -38,9 +37,8 @@ export interface TreatmentDto {
 }
 
 export const TREATMENT_INCLUDE = {
-  patient: true,
-  doctor: true,
-  service: true,
+  patient: { select: { firstName: true, lastName: true } },
+  service: { select: { name: true } },
 } as const;
 
 export function mapTreatment(t: TreatmentWithRelations): TreatmentDto {
@@ -52,8 +50,6 @@ export function mapTreatment(t: TreatmentWithRelations): TreatmentDto {
       : '',
     serviceId: t.serviceId,
     serviceName: t.service?.name ?? '',
-    doctorId: t.doctorId,
-    doctorName: t.doctor ? `${t.doctor.firstName} ${t.doctor.lastName}` : '',
     therapistName: t.therapistName ?? undefined,
     appointmentId: t.appointmentId ?? undefined,
     date: t.date,
@@ -70,6 +66,8 @@ export function mapTreatment(t: TreatmentWithRelations): TreatmentDto {
     trichoscopyNotes: t.trichoscopyNotes ?? undefined,
     price: t.price,
     isComplementary: t.isComplementary,
+    planItemId: t.planItemId ?? undefined,
+    readings: t.readings ?? undefined,
     beforeImageKey: t.beforeImageKey ?? undefined,
     afterImageKey: t.afterImageKey ?? undefined,
     notes: t.notes ?? undefined,

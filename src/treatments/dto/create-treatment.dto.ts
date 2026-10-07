@@ -1,9 +1,11 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import { TreatmentArea, TreatmentStatus } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
   IsInt,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Min,
@@ -21,11 +23,6 @@ export class CreateTreatmentDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(1)
-  doctorId?: string;
-
-  @IsOptional()
-  @IsString()
   therapistName?: string;
 
   @IsOptional()
@@ -34,6 +31,7 @@ export class CreateTreatmentDto {
 
   @IsString()
   @MinLength(1)
+  @IsCalendarDate()
   date!: string;
 
   @IsEnum(TreatmentStatus)
@@ -71,6 +69,7 @@ export class CreateTreatmentDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   nextSessionDate?: string;
 
   @IsOptional()
@@ -88,6 +87,10 @@ export class CreateTreatmentDto {
   @IsOptional()
   @IsBoolean()
   isComplementary?: boolean;
+
+  @IsOptional()
+  @IsObject()
+  readings?: Record<string, string | number | boolean | null>;
 
   @IsOptional()
   @IsString()

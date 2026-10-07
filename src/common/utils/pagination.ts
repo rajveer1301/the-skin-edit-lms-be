@@ -10,7 +10,10 @@ export interface PageParams {
 
 export function getPageParams(query: ListQueryDto): PageParams {
   const page = query.page && query.page > 0 ? query.page : 1;
-  const pageSize = query.pageSize && query.pageSize > 0 ? query.pageSize : 10;
+  const pageSize = Math.min(
+    query.pageSize && query.pageSize > 0 ? query.pageSize : 10,
+    1000,
+  );
   return { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
 }
 
@@ -18,11 +21,14 @@ export function buildOrderBy(
   query: ListQueryDto,
   allowed: string[],
   fallback: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' },
-): Record<string, 'asc' | 'desc'> {
+): Record<string, 'asc' | 'desc'>[] {
   if (query.sort && allowed.includes(query.sort)) {
-    return { [query.sort]: query.order === 'desc' ? 'desc' : 'asc' };
+    return [
+      { [query.sort]: query.order === 'desc' ? 'desc' : 'asc' },
+      { id: 'asc' },
+    ];
   }
-  return fallback;
+  return [fallback, { id: 'asc' }];
 }
 
 export function paginated<T>(

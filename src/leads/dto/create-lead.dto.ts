@@ -1,3 +1,4 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import {
   Gender,
   InterestCategory,
@@ -70,5 +71,6 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   followUpDate?: string;
 }

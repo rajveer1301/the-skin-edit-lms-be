@@ -34,7 +34,7 @@ export class CouponsService {
     const [rows, total] = await Promise.all([
       this.prisma.coupon.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),
@@ -52,6 +52,8 @@ export class CouponsService {
   }
 
   async create(dto: CreateCouponDto): Promise<CouponDto> {
+    if (dto.validFrom && dto.validTo && dto.validFrom > dto.validTo)
+      throw new BadRequestException('Coupon validity dates are reversed');
     const code = dto.code.trim().toUpperCase();
     const existing = await this.prisma.coupon.findUnique({ where: { code } });
     if (existing) {
@@ -81,7 +83,21 @@ export class CouponsService {
   }
 
   async update(id: string, dto: UpdateCouponDto): Promise<CouponDto> {
-    await this.ensureExists(id);
+    const existing = await this.prisma.coupon.findUniqueOrThrow({
+      where: { id },
+    });
+    if (
+      (dto.type ?? existing.type) === 'PERCENT' &&
+      (dto.value ?? existing.value) > 100
+    )
+      throw new BadRequestException('Percentage discount cannot exceed 100');
+    if (
+      (dto.validFrom ?? existing.validFrom) &&
+      (dto.validTo ?? existing.validTo) &&
+      (dto.validFrom ?? existing.validFrom)! >
+        (dto.validTo ?? existing.validTo)!
+    )
+      throw new BadRequestException('Coupon validity dates are reversed');
     const data: Prisma.CouponUpdateInput = { ...dto };
     if (dto.code) {
       data.code = dto.code.trim().toUpperCase();
@@ -91,7 +107,6 @@ export class CouponsService {
   }
 
   async remove(id: string): Promise<{ success: boolean }> {
-    await this.ensureExists(id);
     await this.prisma.coupon.delete({ where: { id } });
     return { success: true };
   }
@@ -110,7 +125,7 @@ export class CouponsService {
     const [rows, total] = await Promise.all([
       this.prisma.couponUsage.findMany({
         where,
-        orderBy: { usedAt: 'desc' },
+        orderBy: [{ usedAt: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),
@@ -130,7 +145,7 @@ export class CouponsService {
     const [rows, total] = await Promise.all([
       this.prisma.couponUsage.findMany({
         where,
-        orderBy: { usedAt: 'desc' },
+        orderBy: [{ usedAt: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),

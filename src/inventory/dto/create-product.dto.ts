@@ -1,3 +1,4 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import {
   IsBoolean,
   IsInt,
@@ -55,6 +56,7 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   expiryDate?: string;
 
   @IsOptional()
@@ -76,5 +78,5 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsBoolean()
-  active?: boolean = true;
+  active?: boolean;
 }

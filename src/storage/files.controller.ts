@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Controller,
   Get,
+  Header,
   NotFoundException,
+  ForbiddenException,
   Post,
   Query,
   StreamableFile,
@@ -58,11 +60,20 @@ export class FilesController {
   }
 
   @Public()
+  @Header('Cache-Control', 'private, no-store')
+  @Header('X-Content-Type-Options', 'nosniff')
+  @Header('Content-Security-Policy', "sandbox; default-src 'none'")
   @Get()
-  async download(@Query('key') key: string): Promise<StreamableFile> {
+  async download(
+    @Query('key') key: string,
+    @Query('expires') expires: string,
+    @Query('signature') signature: string,
+  ): Promise<StreamableFile> {
     if (!key) {
       throw new BadRequestException('key is required');
     }
+    if (!this.storage.verifyDownload(key, expires, signature))
+      throw new ForbiddenException('File link is invalid or expired');
     try {
       const { stream, contentType } = await this.storage.open(key);
       return new StreamableFile(stream, {

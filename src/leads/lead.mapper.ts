@@ -1,6 +1,8 @@
 import { Lead, User } from '@prisma/client';
 
-export type LeadWithAssignee = Lead & { assignedTo?: User | null };
+export type LeadWithAssignee = Lead & {
+  assignedTo?: Pick<User, 'firstName' | 'lastName'> | null;
+};
 
 export interface LeadDto {
   id: string;
@@ -24,7 +26,9 @@ export interface LeadDto {
   createdAt?: string;
 }
 
-export const LEAD_INCLUDE = { assignedTo: true } as const;
+export const LEAD_INCLUDE = {
+  assignedTo: { select: { firstName: true, lastName: true } },
+} as const;
 
 export function mapLead(l: LeadWithAssignee): LeadDto {
   return {

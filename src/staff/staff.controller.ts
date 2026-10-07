@@ -1,3 +1,4 @@
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   Body,
   Controller,
@@ -31,19 +32,23 @@ export class StaffController {
 
   @Roles(Role.ADMIN)
   @Post()
-  create(@Body() dto: CreateStaffDto) {
-    return this.staffService.create(dto);
+  create(@Body() dto: CreateStaffDto, @CurrentUser('role') role: string) {
+    return this.staffService.create(dto, role);
   }
 
   @Roles(Role.ADMIN)
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateStaffDto) {
-    return this.staffService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStaffDto,
+    @CurrentUser('role') role: string,
+  ) {
+    return this.staffService.update(id, dto, role);
   }
 
   @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.staffService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser('role') role: string) {
+    return this.staffService.remove(id, role);
   }
 }

@@ -1,3 +1,4 @@
+import { IsCalendarDate } from '../../common/utils/dates';
 import {
   FitzpatrickType,
   Gender,
@@ -30,6 +31,7 @@ export class CreatePatientDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   dateOfBirth?: string;
 
   @IsOptional()
@@ -83,7 +85,7 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  allergies?: string[] = [];
+  allergies?: string[];
 
   @IsOptional()
   @IsString()
@@ -92,12 +94,12 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  medicalConditions?: string[] = [];
+  medicalConditions?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  medications?: string[] = [];
+  medications?: string[];
 
   @IsOptional()
   @IsString()
@@ -106,7 +108,7 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  previousProcedures?: string[] = [];
+  previousProcedures?: string[];
 
   @IsOptional()
   @IsString()
@@ -155,7 +157,7 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  visitReasons?: string[] = [];
+  visitReasons?: string[];
 
   @IsOptional()
   @IsString()
@@ -172,12 +174,12 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  skinHairProfile?: string[] = [];
+  skinHairProfile?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  allergyCategories?: string[] = [];
+  allergyCategories?: string[];
 
   @IsOptional()
   @IsString()
@@ -209,6 +211,7 @@ export class CreatePatientDto {
 
   @IsOptional()
   @IsString()
+  @IsCalendarDate()
   upcomingEventDate?: string;
 
   @IsOptional()
@@ -242,17 +245,17 @@ export class CreatePatientDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  skinConcerns?: string[] = [];
+  skinConcerns?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  hairConcerns?: string[] = [];
+  hairConcerns?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  wellnessConcerns?: string[] = [];
+  wellnessConcerns?: string[];
 
   @IsOptional()
   @IsString()

@@ -16,6 +16,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { InvoiceQueryDto } from './dto/invoice-query.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 
+@Roles(Role.ADMIN, Role.ACCOUNTANT, Role.RECEPTIONIST)
 @Controller('invoices')
 export class InvoicesController {
   constructor(private readonly billingService: BillingService) {}

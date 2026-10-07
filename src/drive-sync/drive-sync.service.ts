@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { randomUUID } from 'crypto';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 import { Patient, Treatment } from '@prisma/client';
 import { GoogleDriveService } from '../google-drive/google-drive.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,7 +23,7 @@ export interface DriveSyncSummary {
 }
 
 @Injectable()
-export class DriveSyncService {
+export class DriveSyncService implements OnModuleInit {
   private readonly logger = new Logger(DriveSyncService.name);
   private running = false;
 
@@ -29,10 +31,21 @@ export class DriveSyncService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly drive: GoogleDriveService,
+    private readonly scheduler: SchedulerRegistry,
   ) {}
 
-  // Runs every night at 2:00 AM server time.
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  onModuleInit(): void {
+    // Read the zone after ConfigModule has loaded .env, not at import time.
+    const job = CronJob.from({
+      cronTime: '0 0 2 * * *',
+      timeZone: process.env.CLINIC_TIMEZONE || 'Asia/Kolkata',
+      onTick: () => this.handleNightlySync(),
+      errorHandler: () => this.logger.error('Nightly Google Drive sync failed'),
+    });
+    this.scheduler.addCronJob('drive-sync', job);
+    job.start();
+  }
+
   async handleNightlySync(): Promise<void> {
     await this.runSync();
   }
@@ -61,6 +74,20 @@ export class DriveSyncService {
     }
 
     this.running = true;
+    const owner = randomUUID();
+    const folders = new Map<string, Promise<string>>();
+    const ensureFolder = (parent: string, name: string) => {
+      const key = JSON.stringify([parent, name]);
+      if (!folders.has(key))
+        folders.set(
+          key,
+          this.drive.ensureFolder(parent, name).catch((error) => {
+            folders.delete(key);
+            throw error;
+          }),
+        );
+      return folders.get(key)!;
+    };
     this.logger.log('Starting nightly Google Drive sync...');
     const startedAt = Date.now();
     let documentsSynced = 0;
@@ -69,29 +96,63 @@ export class DriveSyncService {
     let treatmentImagesFailed = 0;
 
     try {
-      const rootFolderId = await this.drive.ensureFolder(
+      await this.prisma.jobLease.createMany({
+        data: [{ name: 'drive-sync', owner: '', expiresAt: new Date(0) }],
+        skipDuplicates: true,
+      });
+      const claimed = await this.prisma.jobLease.updateMany({
+        where: { name: 'drive-sync', expiresAt: { lt: new Date() } },
+        data: { owner, expiresAt: new Date(Date.now() + 15 * 60_000) },
+      });
+      if (!claimed.count)
+        return {
+          enabled: true,
+          documentsSynced: 0,
+          documentsFailed: 0,
+          treatmentImagesSynced: 0,
+          treatmentImagesFailed: 0,
+        };
+      const heartbeat = async () => {
+        const held = await this.prisma.jobLease.updateMany({
+          where: { name: 'drive-sync', owner },
+          data: { expiresAt: new Date(Date.now() + 15 * 60_000) },
+        });
+        if (!held.count) throw new Error('Drive sync lease was lost');
+      };
+      const rootFolderId = await ensureFolder(
         this.drive.rootFolder,
         ROOT_FOLDER_NAME,
       );
 
       const pendingDocs = await this.prisma.patientDocument.findMany({
-        where: { driveFileId: null },
-        include: { patient: true },
+        where: { driveFileId: null, syncAfter: { lte: new Date() } },
+        include: {
+          patient: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              driveFolderId: true,
+            },
+          },
+        },
         take: BATCH_LIMIT,
-        orderBy: { uploadedAt: 'asc' },
+        orderBy: [{ syncAfter: 'asc' }, { id: 'asc' }],
       });
       for (const doc of pendingDocs) {
+        await heartbeat();
         try {
           const patientFolderId = await this.getPatientFolderId(
             doc.patient,
             rootFolderId,
+            ensureFolder,
           );
-          const docsFolderId = await this.drive.ensureFolder(
+          const docsFolderId = await ensureFolder(
             patientFolderId,
             DOCUMENTS_FOLDER_NAME,
           );
           const { stream } = await this.storage.open(doc.storageKey);
-          const filename = `${doc.uploadedAt.toISOString().slice(0, 10)}_${doc.name}`;
+          const filename = `${doc.id}_${doc.name}`;
           const fileId = await this.drive.uploadFile({
             parentFolderId: docsFolderId,
             filename,
@@ -105,6 +166,13 @@ export class DriveSyncService {
           documentsSynced += 1;
         } catch (err) {
           documentsFailed += 1;
+          await this.prisma.patientDocument.updateMany({
+            where: { id: doc.id },
+            data: {
+              syncAttempts: { increment: 1 },
+              syncAfter: this.retryAt(doc.syncAttempts),
+            },
+          });
           this.logger.error(
             `Failed to sync document ${doc.id} for patient ${doc.patientId}: ${(err as Error).message}`,
           );
@@ -113,26 +181,38 @@ export class DriveSyncService {
 
       const pendingTreatments = await this.prisma.treatment.findMany({
         where: {
+          syncAfter: { lte: new Date() },
           OR: [
             { beforeImageKey: { not: null }, beforeImageDriveId: null },
             { afterImageKey: { not: null }, afterImageDriveId: null },
           ],
         },
-        include: { patient: true },
+        include: {
+          patient: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              driveFolderId: true,
+            },
+          },
+        },
         take: BATCH_LIMIT,
-        orderBy: { createdAt: 'asc' },
+        orderBy: [{ syncAfter: 'asc' }, { id: 'asc' }],
       });
       for (const treatment of pendingTreatments) {
+        await heartbeat();
         try {
           const patientFolderId = await this.getPatientFolderId(
             treatment.patient,
             rootFolderId,
+            ensureFolder,
           );
-          const treatmentsFolderId = await this.drive.ensureFolder(
+          const treatmentsFolderId = await ensureFolder(
             patientFolderId,
             TREATMENTS_FOLDER_NAME,
           );
-          const treatmentFolderId = await this.drive.ensureFolder(
+          const treatmentFolderId = await ensureFolder(
             treatmentsFolderId,
             `${treatment.date}_${treatment.id}`,
           );
@@ -158,14 +238,33 @@ export class DriveSyncService {
           }
           if (Object.keys(data).length > 0) {
             data.imagesDriveSyncedAt = new Date();
-            await this.prisma.treatment.update({
-              where: { id: treatment.id },
-              data,
+            const saved = await this.prisma.treatment.updateMany({
+              where: {
+                id: treatment.id,
+                beforeImageKey: treatment.beforeImageKey,
+                afterImageKey: treatment.afterImageKey,
+              },
+              data: {
+                beforeImageDriveId: data.beforeImageDriveId,
+                afterImageDriveId: data.afterImageDriveId,
+                imagesDriveSyncedAt: data.imagesDriveSyncedAt,
+              },
             });
+            treatmentImagesSynced += saved.count;
           }
-          treatmentImagesSynced += 1;
         } catch (err) {
           treatmentImagesFailed += 1;
+          await this.prisma.treatment.updateMany({
+            where: {
+              id: treatment.id,
+              beforeImageKey: treatment.beforeImageKey,
+              afterImageKey: treatment.afterImageKey,
+            },
+            data: {
+              syncAttempts: { increment: 1 },
+              syncAfter: this.retryAt(treatment.syncAttempts),
+            },
+          });
           this.logger.error(
             `Failed to sync images for treatment ${treatment.id} (patient ${treatment.patientId}): ${(err as Error).message}`,
           );
@@ -173,6 +272,9 @@ export class DriveSyncService {
       }
     } finally {
       this.running = false;
+      await this.prisma.jobLease.deleteMany({
+        where: { name: 'drive-sync', owner },
+      });
     }
 
     const elapsedSec = ((Date.now() - startedAt) / 1000).toFixed(1);
@@ -192,8 +294,9 @@ export class DriveSyncService {
 
   /** Returns the cached Drive folder id for a patient, creating + caching it if needed. */
   private async getPatientFolderId(
-    patient: Patient,
+    patient: Pick<Patient, 'id' | 'firstName' | 'lastName' | 'driveFolderId'>,
     rootFolderId: string,
+    ensureFolder: (parent: string, name: string) => Promise<string>,
   ): Promise<string> {
     if (patient.driveFolderId) {
       return patient.driveFolderId;
@@ -203,12 +306,19 @@ export class DriveSyncService {
         /\s+/g,
         '',
       );
-    const folderId = await this.drive.ensureFolder(rootFolderId, folderName);
+    const folderId = await ensureFolder(rootFolderId, folderName);
     await this.prisma.patient.update({
       where: { id: patient.id },
       data: { driveFolderId: folderId },
     });
     return folderId;
+  }
+
+  private retryAt(attempts: number): Date {
+    return new Date(
+      Date.now() +
+        Math.min(7 * 86400_000, 15 * 60_000 * 2 ** Math.min(attempts, 10)),
+    );
   }
 
   private async uploadImage(

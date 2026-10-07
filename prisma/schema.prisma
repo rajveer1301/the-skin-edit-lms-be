@@ -146,6 +146,28 @@ enum TreatmentStatus {
   COMPLETED
 }
 
+enum ConsultDecision {
+  OPEN
+  REPORTS_PENDING
+  AWAITING_DECISION
+  PROCEED
+  DECLINED
+}
+
+enum PlanStatus {
+  PROPOSED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  DECLINED
+}
+
+enum PlanItemKind {
+  PACKAGE
+  SINGLE
+  COMPLEMENTARY
+}
+
 enum InvoiceStatus {
   DRAFT
   UNPAID
@@ -194,97 +216,99 @@ enum LeadSource {
 }
 
 model User {
-  id                  String   @id @default(cuid())
-  firstName           String
-  lastName            String
-  email               String   @unique
-  phone               String?
-  role                Role
-  active              Boolean  @default(true)
-  specialization      String?
-  registrationNumber  String?
-  calendarColor       String?
-  workingHours        String?
-  commissionPercent   Float?
-  avatarUrl           String?
-  passwordHash        String
-  refreshToken        String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String   @unique
+  phone              String?
+  role               Role
+  active             Boolean  @default(true)
+  specialization     String?
+  registrationNumber String?
+  calendarColor      String?
+  workingHours       String?
+  commissionPercent  Float?
+  avatarUrl          String?
+  passwordHash       String
+  refreshToken       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  appointments  Appointment[] @relation("DoctorAppointments")
-  treatments    Treatment[]   @relation("DoctorTreatments")
-  assignedLeads Lead[]        @relation("AssignedLeads")
+  assignedLeads Lead[] @relation("AssignedLeads")
 }
 
 model Patient {
-  id                     String            @id @default(cuid())
-  mrn                    String?
-  firstName              String
-  lastName               String
-  gender                 Gender
-  dateOfBirth            String?
-  phone                  String
-  whatsapp               String?
-  reminderChannel        ReminderChannel?
-  email                  String?
-  address                String?
-  city                   String?
-  bloodGroup             String?
-  emergencyContactName   String?
-  emergencyContactPhone  String?
-  occupation             String?
-  lifestyleNotes         String?
-  allergies              String[]
-  allergyDetails         String?
-  medicalConditions      String[]          @default([])
-  medications            String[]          @default([])
-  medicalHistory         String?
-  previousProcedures     String[]          @default([])
-  pregnancyStatus        String?
-  familyHistoryAlopecia  Boolean?
-  smokingStatus          String?
-  referralSource         String?
-  leadId                 String?
-  billingName            String?
-  preferredLanguage      String?
-  maritalStatus          String?
-  pincode                String?
-  emergencyContactRelation String?
+  id                             String           @id @default(cuid())
+  mrn                            String?
+  firstName                      String
+  lastName                       String
+  gender                         Gender
+  dateOfBirth                    String?
+  phone                          String
+  whatsapp                       String?
+  reminderChannel                ReminderChannel?
+  email                          String?
+  address                        String?
+  city                           String?
+  bloodGroup                     String?
+  emergencyContactName           String?
+  emergencyContactPhone          String?
+  occupation                     String?
+  lifestyleNotes                 String?
+  allergies                      String[]
+  allergyDetails                 String?
+  medicalConditions              String[]         @default([])
+  medications                    String[]         @default([])
+  medicalHistory                 String?
+  previousProcedures             String[]         @default([])
+  pregnancyStatus                String?
+  familyHistoryAlopecia          Boolean?
+  smokingStatus                  String?
+  referralSource                 String?
+  leadId                         String?
+  billingName                    String?
+  preferredLanguage              String?
+  maritalStatus                  String?
+  pincode                        String?
+  emergencyContactRelation       String?
   emergencyContactAlternatePhone String?
-  visitReasons           String[]          @default([])
-  visitReasonOther       String?
-  mainConcern            String?
-  referralSourceOther    String?
-  skinHairProfile        String[]          @default([])
-  allergyCategories      String[]          @default([])
-  recentProcedures       String?
-  homeCareProducts       String?
-  isotretinoinLast12Months String?
-  isotretinoinWhen       String?
-  photosensitisingMedicines String?
-  activeTreatmentAreaIssue String?
-  upcomingEventOrSunExposure String?
-  upcomingEventDate      String?
-  implantableDevices     String?
-  implantableDevicesDetails String?
-  fitzpatrickType        FitzpatrickType?
-  scalpType              ScalpType?
-  hairType               HairType?
-  hairLossScale          HairLossScale?
-  hairLossGrade          String?
-  skinConcerns           String[]
-  hairConcerns           String[]
-  wellnessConcerns       String[]          @default([])
-  notes                  String?
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  driveFolderId          String?
+  visitReasons                   String[]         @default([])
+  visitReasonOther               String?
+  mainConcern                    String?
+  referralSourceOther            String?
+  skinHairProfile                String[]         @default([])
+  allergyCategories              String[]         @default([])
+  recentProcedures               String?
+  homeCareProducts               String?
+  isotretinoinLast12Months       String?
+  isotretinoinWhen               String?
+  photosensitisingMedicines      String?
+  activeTreatmentAreaIssue       String?
+  upcomingEventOrSunExposure     String?
+  upcomingEventDate              String?
+  implantableDevices             String?
+  implantableDevicesDetails      String?
+  fitzpatrickType                FitzpatrickType?
+  scalpType                      ScalpType?
+  hairType                       HairType?
+  hairLossScale                  HairLossScale?
+  hairLossGrade                  String?
+  skinConcerns                   String[]
+  hairConcerns                   String[]
+  wellnessConcerns               String[]         @default([])
+  notes                          String?
+  createdAt                      DateTime         @default(now())
+  updatedAt                      DateTime         @updatedAt
+  driveFolderId                  String?
 
-  appointments Appointment[]
-  treatments   Treatment[]
-  invoices     Invoice[]
-  documents    PatientDocument[]
+  appointments   Appointment[]
+  treatments     Treatment[]
+  invoices       Invoice[]
+  documents      PatientDocument[]
+  treatmentPlans TreatmentPlan[]
+
+  @@index([createdAt, id])
+  @@index([leadId])
 }
 
 model ClinicService {
@@ -301,137 +325,182 @@ model ClinicService {
   requiresConsent     Boolean         @default(false)
   isPackage           Boolean         @default(false)
   defaultSessionCount Int?
+  defaultIntervalDays Int?
+  parameterTemplate   Json?
   active              Boolean         @default(true)
 
   appointments Appointment[]
   treatments   Treatment[]
+  planItems    TreatmentPlanItem[]
 }
 
 model Appointment {
-  id               String            @id @default(cuid())
-  patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId        String
-  doctor           User?             @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  doctorId         String?
-  service          ClinicService?    @relation(fields: [serviceId], references: [id])
-  serviceId        String?
-  visitType        VisitType         @default(CONSULTATION)
-  chiefComplaint   String?
-  treatmentArea    TreatmentArea?
-  sessionNumber    Int?
-  totalSessions    Int?
-  consentStatus    PrepStatus?
-  patchTestStatus  PrepStatus?
-  room             String?
-  bookingSource    BookingSource?
-  reminderChannel  ReminderChannel?
-  depositExpected  Float?
-  treatmentId      String?
-  invoiceId        String?
-  startTime        DateTime
-  endTime          DateTime
-  status           AppointmentStatus @default(SCHEDULED)
-  notes            String?
-  createdAt        DateTime          @default(now())
+  id              String            @id @default(cuid())
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId       String
+  service         ClinicService?    @relation(fields: [serviceId], references: [id])
+  serviceId       String?
+  visitType       VisitType         @default(CONSULTATION)
+  chiefComplaint  String?
+  treatmentArea   TreatmentArea?
+  sessionNumber   Int?
+  totalSessions   Int?
+  consentStatus   PrepStatus?
+  patchTestStatus PrepStatus?
+  room            String?
+  bookingSource   BookingSource?
+  reminderChannel ReminderChannel?
+  depositExpected Float?
+  treatmentId     String?
+  invoiceId       String?
+  decision        ConsultDecision   @default(OPEN)
+  followUpDate    String?
+  startTime       DateTime
+  endTime         DateTime
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime          @default(now())
+
+  treatmentPlans TreatmentPlan[]
+  documents      PatientDocument[]
+
+  @@index([startTime, id])
+  @@index([patientId, startTime, id])
+  @@index([createdAt, id])
+  @@index([decision, followUpDate])
 }
 
 model Treatment {
-  id               String          @id @default(cuid())
-  patient          Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId        String
-  service          ClinicService   @relation(fields: [serviceId], references: [id])
-  serviceId        String
-  doctor           User?           @relation("DoctorTreatments", fields: [doctorId], references: [id])
-  doctorId         String?
-  therapistName    String?
-  appointmentId    String?
-  date             String
-  status           TreatmentStatus @default(PLANNED)
-  sessionNumber    Int?
-  totalSessions    Int?
-  treatmentArea    TreatmentArea?
-  parameters       String?
-  consumablesUsed  String?
-  adverseReaction  String?
-  aftercare        String?
-  nextSessionDate  String?
-  diagnosis        String?
-  trichoscopyNotes String?
-  price            Float
-  isComplementary  Boolean         @default(false)
-  beforeImageKey   String?
-  beforeImageType  String?
-  afterImageKey    String?
-  afterImageType   String?
-  notes            String?
-  createdAt        DateTime        @default(now())
-  beforeImageDriveId   String?
-  afterImageDriveId    String?
-  imagesDriveSyncedAt  DateTime?
+  syncAttempts        Int                @default(0)
+  syncAfter           DateTime           @default(now())
+  id                  String             @id @default(cuid())
+  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId           String
+  service             ClinicService      @relation(fields: [serviceId], references: [id])
+  serviceId           String
+  therapistName       String?
+  appointmentId       String?
+  date                String
+  status              TreatmentStatus    @default(PLANNED)
+  sessionNumber       Int?
+  totalSessions       Int?
+  treatmentArea       TreatmentArea?
+  parameters          String?
+  consumablesUsed     String?
+  adverseReaction     String?
+  aftercare           String?
+  nextSessionDate     String?
+  diagnosis           String?
+  trichoscopyNotes    String?
+  price               Float
+  isComplementary     Boolean            @default(false)
+  planItem            TreatmentPlanItem? @relation(fields: [planItemId], references: [id], onDelete: SetNull)
+  planItemId          String?
+  readings            Json?
+  beforeImageKey      String?
+  beforeImageType     String?
+  afterImageKey       String?
+  afterImageType      String?
+  notes               String?
+  createdAt           DateTime           @default(now())
+  beforeImageDriveId  String?
+  afterImageDriveId   String?
+  imagesDriveSyncedAt DateTime?
+
+  @@unique([planItemId, sessionNumber])
+  @@index([planItemId])
+  @@index([patientId, date, id])
+  @@index([date, id])
 }
 
 model PatientDocument {
-  id          String   @id @default(cuid())
-  patient        Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId      String
-  name           String
-  type           String
-  storageKey     String
-  contentType    String
-  sizeBytes      Int
-  uploadedAt     DateTime  @default(now())
-  driveFileId    String?
-  driveSyncedAt  DateTime?
+  syncAttempts  Int            @default(0)
+  syncAfter     DateTime       @default(now())
+  id            String         @id @default(cuid())
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId     String
+  name          String
+  type          String
+  storageKey    String
+  contentType   String
+  sizeBytes     Int
+  uploadedAt    DateTime       @default(now())
+  driveFileId   String?
+  driveSyncedAt DateTime?
+  plan          TreatmentPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  planId        String?
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId String?
 
   @@index([patientId, uploadedAt])
+  @@index([planId])
 }
 
 model Invoice {
-  id            String        @id @default(cuid())
-  number        String        @unique
-  patient       Patient       @relation(fields: [patientId], references: [id])
-  patientId     String
-  billedToName  String?
-  appointmentId String?
-  treatmentId   String?
-  subtotal      Float
-  discount      Float         @default(0)
-  tax           Float         @default(0)
-  cgst          Float?
-  sgst          Float?
-  roundOff      Float         @default(0)
-  total         Float
-  amountPaid    Float         @default(0)
-  balance       Float
-  status        InvoiceStatus @default(UNPAID)
-  issuedDate    String
-  dueDate       String?
-  notes         String?
-  couponId      String?
-  couponCode    String?
-  createdAt     DateTime      @default(now())
+  manualDiscount Float          @default(0)
+  couponDiscount Float          @default(0)
+  couponSnapshot Json?
+  idempotencyKey String?        @unique
+  requestHash    String?
+  id             String         @id @default(cuid())
+  number         String         @unique
+  patient        Patient        @relation(fields: [patientId], references: [id])
+  patientId      String
+  billedToName   String?
+  appointmentId  String?
+  treatmentId    String?
+  subtotal       Float
+  discount       Float          @default(0)
+  tax            Float          @default(0)
+  cgst           Float?
+  sgst           Float?
+  roundOff       Float          @default(0)
+  total          Float
+  amountPaid     Float          @default(0)
+  balance        Float
+  status         InvoiceStatus  @default(UNPAID)
+  issuedDate     String
+  dueDate        String?
+  notes          String?
+  couponId       String?
+  couponCode     String?
+  plan           TreatmentPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  planId         String?
+  createdAt      DateTime       @default(now())
 
   coupon   Coupon?       @relation(fields: [couponId], references: [id])
   items    InvoiceItem[]
   payments Payment[]
+
+  @@index([patientId, createdAt, id])
+  @@index([createdAt, id])
+  @@index([status, createdAt])
+  @@index([planId])
 }
 
 model InvoiceItem {
-  id          String   @id @default(cuid())
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id          String             @id @default(cuid())
+  invoice     Invoice            @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   invoiceId   String
   description String
   serviceId   String?
-  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product     Product?           @relation(fields: [productId], references: [id], onDelete: SetNull)
   productId   String?
+  planItem    TreatmentPlanItem? @relation(fields: [planItemId], references: [id], onDelete: SetNull)
+  planItemId  String?
   hsnSac      String?
   gstPercent  Float?
   quantity    Int
   unitPrice   Float
   total       Float
+
+  @@index([invoiceId])
+  @@index([planItemId])
 }
 
 model Payment {
+  idempotencyKey   String?
+  requestHash      String?
   id               String        @id @default(cuid())
   invoice          Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   invoiceId        String
@@ -444,6 +513,10 @@ model Payment {
   paymentKind      PaymentKind?
   instalmentNumber Int?
   instalmentOf     Int?
+
+  @@unique([invoiceId, idempotencyKey])
+  @@index([invoiceId, date, id])
+  @@index([date, id])
 }
 
 model Product {
@@ -480,6 +553,50 @@ model StockMovement {
   treatmentId String?
   date        DateTime          @default(now())
   byUserName  String?
+
+  @@index([productId, date, id])
+  @@index([date, id])
+}
+
+model TreatmentPlan {
+  id             String       @id @default(cuid())
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId      String
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId  String?
+  status         PlanStatus   @default(PROPOSED)
+  followUpDate   String?
+  declinedReason String?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  items     TreatmentPlanItem[]
+  documents PatientDocument[]
+  invoices  Invoice[]
+
+  @@index([patientId, status])
+  @@index([followUpDate])
+  @@index([createdAt, id])
+}
+
+model TreatmentPlanItem {
+  id                String        @id @default(cuid())
+  plan              TreatmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  planId            String
+  service           ClinicService @relation(fields: [serviceId], references: [id])
+  serviceId         String
+  kind              PlanItemKind
+  sessionCount      Int
+  intervalDays      Int?
+  price             Float
+  startDate         String?
+  parameterTemplate Json?
+
+  sessions     Treatment[]
+  invoiceItems InvoiceItem[]
+
+  @@index([planId])
 }
 
 model Lead {
@@ -502,6 +619,9 @@ model Lead {
   notes              String?
   followUpDate       String?
   createdAt          DateTime          @default(now())
+
+  @@index([status, createdAt])
+  @@index([createdAt, id])
 }
 
 model Coupon {
@@ -537,4 +657,28 @@ model CouponUsage {
   patientName    String?
   discountAmount Float
   usedAt         DateTime @default(now())
+
+  @@unique([invoiceId])
+  @@index([couponId, usedAt])
+  @@index([couponId, patientId])
+}
+
+model NumberCounter {
+  name  String @id
+  value Int
+}
+
+model FileCleanup {
+  key           String   @id
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([nextAttemptAt])
+}
+
+model JobLease {
+  name      String   @id
+  owner     String
+  expiresAt DateTime
 }

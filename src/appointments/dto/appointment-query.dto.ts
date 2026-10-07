@@ -9,10 +9,6 @@ export class AppointmentQueryDto extends ListQueryDto {
 
   @IsOptional()
   @IsString()
-  doctorId?: string;
-
-  @IsOptional()
-  @IsString()
   patientId?: string;
 
   @IsOptional()

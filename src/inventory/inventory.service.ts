@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { serializable } from '../common/utils/transaction';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, Product, StockMovementType } from '@prisma/client';
 import { ListQueryDto } from '../common/dto/list-query.dto';
 import { Paginated } from '../common/interfaces/paginated.interface';
@@ -59,12 +64,24 @@ export class InventoryService {
   }
 
   async updateProduct(id: string, dto: UpdateProductDto): Promise<Product> {
-    await this.findProduct(id);
-    return this.prisma.product.update({ where: { id }, data: dto });
+    return serializable(this.prisma, async (tx) => {
+      const existing = await tx.product.findUniqueOrThrow({ where: { id } });
+      const product = await tx.product.update({ where: { id }, data: dto });
+      if (dto.quantity !== undefined && dto.quantity !== existing.quantity) {
+        await tx.stockMovement.create({
+          data: {
+            productId: id,
+            type: StockMovementType.ADJUSTMENT,
+            quantity: dto.quantity,
+            reason: 'Quantity adjusted through product update',
+          },
+        });
+      }
+      return product;
+    });
   }
 
   async removeProduct(id: string): Promise<{ success: boolean }> {
-    await this.findProduct(id);
     await this.prisma.product.delete({ where: { id } });
     return { success: true };
   }
@@ -84,8 +101,8 @@ export class InventoryService {
     const [rows, total] = await Promise.all([
       this.prisma.stockMovement.findMany({
         where,
-        include: { product: true },
-        orderBy: { date: 'desc' },
+        include: { product: { select: { name: true } } },
+        orderBy: [{ date: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),
@@ -98,38 +115,49 @@ export class InventoryService {
     dto: CreateStockMovementDto,
     userId: string,
   ): Promise<StockMovementDto> {
-    const product = await this.prisma.product.findUnique({
-      where: { id: dto.productId },
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { firstName: true, lastName: true },
     });
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    const byUserName = user ? `${user.firstName} ${user.lastName}` : undefined;
-
-    let newQuantity = product.quantity;
-    if (dto.type === StockMovementType.IN) newQuantity += dto.quantity;
-    else if (dto.type === StockMovementType.OUT)
-      newQuantity = Math.max(0, product.quantity - dto.quantity);
-    else newQuantity = dto.quantity;
-
-    const [movement] = await this.prisma.$transaction([
-      this.prisma.stockMovement.create({
-        data: {
-          productId: dto.productId,
-          type: dto.type,
-          quantity: dto.quantity,
-          reason: dto.reason,
-          treatmentId: dto.treatmentId,
-          byUserName,
+    return serializable(this.prisma, async (tx) => {
+      if (dto.type !== StockMovementType.ADJUSTMENT && dto.quantity <= 0)
+        throw new BadRequestException(
+          'Stock movement quantity must be positive',
+        );
+      if (
+        dto.treatmentId &&
+        !(await tx.treatment.count({ where: { id: dto.treatmentId } }))
+      )
+        throw new BadRequestException('Treatment not found');
+      const changed = await tx.product.updateMany({
+        where: {
+          id: dto.productId,
+          ...(dto.type === StockMovementType.OUT
+            ? { quantity: { gte: dto.quantity } }
+            : {}),
         },
-        include: { product: true },
-      }),
-      this.prisma.product.update({
-        where: { id: dto.productId },
-        data: { quantity: newQuantity },
-      }),
-    ]);
-    return mapStockMovement(movement);
+        data: {
+          quantity:
+            dto.type === StockMovementType.IN
+              ? { increment: dto.quantity }
+              : dto.type === StockMovementType.OUT
+                ? { decrement: dto.quantity }
+                : dto.quantity,
+        },
+      });
+      if (!changed.count) {
+        if (!(await tx.product.count({ where: { id: dto.productId } })))
+          throw new NotFoundException('Product not found');
+        throw new BadRequestException('Insufficient stock');
+      }
+      const movement = await tx.stockMovement.create({
+        data: {
+          ...dto,
+          byUserName: user ? `${user.firstName} ${user.lastName}` : undefined,
+        },
+        include: { product: { select: { name: true } } },
+      });
+      return mapStockMovement(movement);
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { Product, StockMovement } from '@prisma/client';
 
 export type StockMovementWithProduct = StockMovement & {
-  product?: Product | null;
+  product?: Pick<Product, 'name'> | null;
 };
 
 export interface StockMovementDto {

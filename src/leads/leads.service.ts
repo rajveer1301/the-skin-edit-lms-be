@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { serializable } from '../common/utils/transaction';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Gender, LeadStatus, Prisma } from '@prisma/client';
 import { Paginated } from '../common/interfaces/paginated.interface';
 import { getPageParams, paginated } from '../common/utils/pagination';
@@ -30,7 +35,7 @@ export class LeadsService {
       this.prisma.lead.findMany({
         where,
         include: LEAD_INCLUDE,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: params.skip,
         take: params.take,
       }),
@@ -51,6 +56,8 @@ export class LeadsService {
   }
 
   async create(dto: CreateLeadDto): Promise<LeadDto> {
+    if (dto.status === LeadStatus.CONVERTED)
+      throw new BadRequestException('Use the lead conversion endpoint');
     const lead = await this.prisma.lead.create({
       data: dto,
       include: LEAD_INCLUDE,
@@ -59,7 +66,17 @@ export class LeadsService {
   }
 
   async update(id: string, dto: UpdateLeadDto): Promise<LeadDto> {
-    await this.ensureExists(id);
+    const current = await this.prisma.lead.findUniqueOrThrow({ where: { id } });
+    if (dto.status === LeadStatus.CONVERTED && !current.convertedPatientId)
+      throw new BadRequestException('Use the lead conversion endpoint');
+    if (
+      current.convertedPatientId &&
+      dto.status &&
+      dto.status !== LeadStatus.CONVERTED
+    )
+      throw new BadRequestException(
+        'Converted leads must retain their conversion status',
+      );
     const lead = await this.prisma.lead.update({
       where: { id },
       data: dto,
@@ -69,13 +86,7 @@ export class LeadsService {
   }
 
   async updateStatus(id: string, status: LeadStatus): Promise<LeadDto> {
-    await this.ensureExists(id);
-    const lead = await this.prisma.lead.update({
-      where: { id },
-      data: { status },
-      include: LEAD_INCLUDE,
-    });
-    return mapLead(lead);
+    return this.update(id, { status });
   }
 
   async remove(id: string): Promise<{ success: boolean }> {
@@ -85,11 +96,25 @@ export class LeadsService {
   }
 
   async convert(id: string, dto: ConvertLeadDto): Promise<PatientDto> {
-    const lead = await this.prisma.lead.findUnique({ where: { id } });
-    if (!lead) {
-      throw new NotFoundException('Lead not found');
-    }
-    const patient = await this.prisma.$transaction(async (tx) => {
+    const patient = await serializable(this.prisma, async (tx) => {
+      const lead = await tx.lead.findUnique({ where: { id } });
+      if (!lead) throw new NotFoundException('Lead not found');
+      if (lead.convertedPatientId)
+        return tx.patient.findUniqueOrThrow({
+          where: { id: lead.convertedPatientId },
+        });
+      // Also handle legacy rows whose patient link was already recorded.
+      const existing = await tx.patient.findFirst({ where: { leadId: id } });
+      if (existing) {
+        await tx.lead.update({
+          where: { id },
+          data: {
+            status: LeadStatus.CONVERTED,
+            convertedPatientId: existing.id,
+          },
+        });
+        return existing;
+      }
       const created = await tx.patient.create({
         data: {
           firstName: lead.firstName,

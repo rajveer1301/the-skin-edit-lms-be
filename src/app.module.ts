@@ -1,3 +1,4 @@
+import { validateConfig } from './common/config';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -19,11 +20,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
 import { StaffModule } from './staff/staff.module';
 import { StorageModule } from './storage/storage.module';
+import { TreatmentPlansModule } from './treatment-plans/treatment-plans.module';
 import { TreatmentsModule } from './treatments/treatments.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateConfig }),
     ScheduleModule.forRoot(),
     PrismaModule,
     StorageModule,
@@ -33,6 +35,7 @@ import { TreatmentsModule } from './treatments/treatments.module';
     AppointmentsModule,
     ServicesModule,
     TreatmentsModule,
+    TreatmentPlansModule,
     BillingModule,
     CouponsModule,
     StaffModule,

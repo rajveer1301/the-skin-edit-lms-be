@@ -1,3 +1,6 @@
+import { clinicDay, clinicMidnight } from '../common/utils/dates';
+import { addDays } from '../treatment-plans/dates';
+import { money } from '../common/utils/money';
 import { Injectable } from '@nestjs/common';
 import { AppointmentStatus, LeadStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -41,22 +44,26 @@ export class DashboardService {
   async summary(role?: string): Promise<DashboardSummary> {
     const canSeeRevenue = role === Role.SUPER_ADMIN;
     const now = new Date();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-    );
-    const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const today = clinicDay(now);
+    const startOfToday = clinicMidnight(today);
+    const endOfToday = clinicMidnight(addDays(today, 1));
+    const monthDay = today.slice(0, 7) + '-01';
+    const startOfMonth = clinicMidnight(monthDay);
+    const next = new Date(`${monthDay}T00:00:00Z`);
+    next.setUTCMonth(next.getUTCMonth() + 1);
+    const nextMonthDay = next.toISOString().slice(0, 10);
+    const bucket = lastSixMonths(now)[0];
+    const revenueStartDay = `${bucket.year}-${String(bucket.month + 1).padStart(2, '0')}-01`;
 
     const [
       appointmentsToday,
       newPatientsThisMonth,
       totalPatients,
-      invoices,
+      pending,
       appointments,
       payments,
       leads,
+      recentActivity,
     ] = await Promise.all([
       this.prisma.appointment.count({
         where: { startTime: { gte: startOfToday, lt: endOfToday } },
@@ -65,51 +72,76 @@ export class DashboardService {
         where: { createdAt: { gte: startOfMonth } },
       }),
       this.prisma.patient.count({}),
-      this.prisma.invoice.findMany({
-        select: { balance: true, amountPaid: true },
+      this.prisma.invoice.aggregate({
+        where: { balance: { gt: 0 }, status: { in: ['UNPAID', 'PARTIAL'] } },
+        _sum: { balance: true },
+        _count: { _all: true },
       }),
-      this.prisma.appointment.findMany({ select: { status: true } }),
-      this.prisma.payment.findMany({ select: { amount: true, date: true } }),
-      this.prisma.lead.findMany({ select: { status: true } }),
+      this.prisma.appointment.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
+      canSeeRevenue
+        ? this.prisma.payment.groupBy({
+            by: ['date'],
+            where: {
+              date: { gte: revenueStartDay, lt: nextMonthDay },
+              invoice: { status: { notIn: ['DRAFT', 'CANCELLED'] } },
+            },
+            _sum: { amount: true },
+          })
+        : Promise.resolve<
+            Array<{ date: string; _sum: { amount: number | null } }>
+          >([]),
+      this.prisma.lead.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.buildRecentActivity(now),
     ]);
 
-    const pending = invoices.filter((i) => i.balance > 0);
-    const revenueThisMonth = payments
-      .filter((p) => new Date(p.date) >= startOfMonth)
+    const dailyPayments = payments.map((payment) => ({
+      date: payment.date,
+      amount: payment._sum.amount ?? 0,
+    }));
+    const revenueThisMonth = dailyPayments
+      .filter((p) => p.date >= monthDay && p.date < nextMonthDay)
       .reduce((sum, p) => sum + p.amount, 0);
 
     const appointmentsByStatus: StatusCount[] = Object.values(
       AppointmentStatus,
     ).map((status) => ({
       status,
-      count: appointments.filter((a) => a.status === status).length,
+      count: appointments.find((a) => a.status === status)?._count._all ?? 0,
     }));
 
-    const noShows = appointments.filter(
-      (a) => a.status === AppointmentStatus.NO_SHOW,
-    ).length;
-    const converted = leads.filter((l) => l.status === LeadStatus.CONVERTED)
-      .length;
+    const noShows =
+      appointments.find((a) => a.status === AppointmentStatus.NO_SHOW)?._count
+        ._all ?? 0;
+    const appointmentCount = appointments.reduce(
+      (sum, group) => sum + group._count._all,
+      0,
+    );
+    const leadCount = leads.reduce((sum, group) => sum + group._count._all, 0);
+    const converted =
+      leads.find((l) => l.status === LeadStatus.CONVERTED)?._count._all ?? 0;
 
     return {
       appointmentsToday,
       // Revenue figures are restricted to SUPER_ADMIN.
-      revenueThisMonth: canSeeRevenue ? revenueThisMonth : 0,
+      revenueThisMonth: canSeeRevenue ? money(revenueThisMonth) : 0,
       newPatientsThisMonth,
       totalPatients,
-      pendingInvoicesAmount: pending.reduce((sum, i) => sum + i.balance, 0),
-      pendingInvoicesCount: pending.length,
-      noShowRate: appointments.length
-        ? Math.round((noShows / appointments.length) * 100)
+      pendingInvoicesAmount: money(pending._sum.balance ?? 0),
+      pendingInvoicesCount: pending._count._all,
+      noShowRate: appointmentCount
+        ? Math.round((noShows / appointmentCount) * 100)
         : 0,
-      leadConversionPercent: leads.length
-        ? Math.round((converted / leads.length) * 100)
+      leadConversionPercent: leadCount
+        ? Math.round((converted / leadCount) * 100)
         : 0,
       revenueSeries: canSeeRevenue
-        ? this.buildRevenueSeries(payments, now)
+        ? this.buildRevenueSeries(dailyPayments, now)
         : [],
       appointmentsByStatus,
-      recentActivity: await this.buildRecentActivity(now),
+      recentActivity,
     };
   }
 
@@ -121,29 +153,53 @@ export class DashboardService {
     const totals = new Map<string, number>();
     for (const p of payments) {
       const d = new Date(p.date);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
       totals.set(key, (totals.get(key) ?? 0) + p.amount);
     }
     return buckets.map((b) => ({
       label: b.label,
-      value: totals.get(bucketKey(b)) ?? 0,
+      value: money(totals.get(bucketKey(b)) ?? 0),
     }));
   }
 
   private async buildRecentActivity(now: Date): Promise<ActivityItem[]> {
     const [patients, appointments, invoices, leads] = await Promise.all([
-      this.prisma.patient.findMany({ orderBy: { createdAt: 'desc' }, take: 3 }),
+      this.prisma.patient.findMany({
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 6,
+        select: { id: true, firstName: true, lastName: true, createdAt: true },
+      }),
       this.prisma.appointment.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 3,
-        include: { patient: true, service: true },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 6,
+        select: {
+          id: true,
+          createdAt: true,
+          patient: { select: { firstName: true, lastName: true } },
+          service: { select: { name: true } },
+        },
       }),
       this.prisma.invoice.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 3,
-        include: { patient: true },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 6,
+        select: {
+          id: true,
+          number: true,
+          createdAt: true,
+          patient: { select: { firstName: true, lastName: true } },
+        },
       }),
-      this.prisma.lead.findMany({ orderBy: { createdAt: 'desc' }, take: 3 }),
+      this.prisma.lead.findMany({
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 6,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          source: true,
+          createdAt: true,
+        },
+      }),
     ]);
 
     const items: (ActivityItem & { at: number })[] = [];
